@@ -10,14 +10,15 @@ use \Category;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
- * and Product Categories
+ * and product categories
  *
- * @author i-lateral (http://www.i-lateral.com)
+ * @author Mo <morven@ilateral.co.uk>
+ * @author Mark <mark@ilateral.co.uk>
  * @package catalogue
+ * @subpackage admin
  */
 class CatalogueAdmin extends ModelAdmin
 {
-    
     /**
      * Set the page length for products
      * 
@@ -63,7 +64,7 @@ class CatalogueAdmin extends ModelAdmin
             "URLSegment" => "URLSegment"
         ];
         
-        if ($this->modelClass == 'Product') {
+        if ($this->modelClass == Product::class) {
             $fields["StockID"] = "StockID";
             $fields["ClassName"] = "Type";
             $fields["BasePrice"] = "Price";
@@ -106,7 +107,6 @@ class CatalogueAdmin extends ModelAdmin
             ));
         }
         
-        // Alterations for Hiarachy on product cataloge
         if ($this->modelClass == Category::class && $grid) {
             $grid->setConfig(GridFieldConfig_Catalogue::create(
                 $this->modelClass,
