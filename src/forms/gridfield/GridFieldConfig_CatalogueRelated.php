@@ -1,6 +1,6 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Forms\GridField;
+namespace SilverCommerce\Catalogue\Forms\GridField;
 
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;

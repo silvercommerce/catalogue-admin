@@ -1,6 +1,6 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Helpers;
+namespace SilverCommerce\Catalogue\Helpers;
 
 use SilverStripe\View\ViewableData;
 
@@ -19,13 +19,13 @@ class Helper extends ViewableData
      * @var array
      * @config
      */
-    private static $classes_to_remove = array(
+    private static $classes_to_remove = [
         "Object",
         "ViewableData",
         "DataObject",
         "CatalogueProduct",
         "CatalogueCategory"
-    );
+    ];
 
     /**
      * Get a list of templates for rendering

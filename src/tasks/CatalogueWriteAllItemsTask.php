@@ -1,10 +1,10 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Tasks;
+namespace SilverCommerce\Catalogue\Tasks;
 
 use SilverStripe\Dev\BuildTask;
-use ilateral\SilverStripe\Catalogue\Model\CatalogueProduct;
-use ilateral\SilverStripe\Catalogue\Model\CatalogueCategory;
+use SilverCommerce\Catalogue\Model\CatalogueProduct;
+use SilverCommerce\Catalogue\Model\CatalogueCategory;
 
 /**
  * Loops through all products and Categories, and sets their URL Segments, if

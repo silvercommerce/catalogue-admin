@@ -1,9 +1,9 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Import;
+namespace SilverCommerce\Catalogue\Import;
 
 use SilverStripe\Dev\CsvBulkLoader;
-use ilateral\SilverStripe\Catalogue\Model\CatalogueProduct;
+use SilverCommerce\Catalogue\Model\CatalogueProduct;
 use Product;
 
 /**

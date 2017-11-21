@@ -1,6 +1,6 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Model;
+namespace SilverCommerce\Catalogue\Model;
 
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ArrayList;
@@ -27,12 +27,12 @@ use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\RequiredFields;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\AssetAdmin\Forms\UploadField;
-use SilverStripe\View\Parsers\URLSegmentFilter;
-use ilateral\SilverStripe\Catalogue\Forms\GridField\GridFieldConfig_Catalogue;
-use ilateral\SilverStripe\Catalogue\Forms\GridField\GridFieldConfig_CatalogueRelated;
+use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_Catalogue;
+use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_CatalogueRelated;
 use SilverStripe\Assets\Image;
-use ilateral\SilverStripe\Catalogue\Catalogue;
+use SilverCommerce\Catalogue\Catalogue;
 use SilverStripe\Core\Convert;
 use TaxRate;
 use CatalogueCategory;
@@ -75,7 +75,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "Title"             => "Varchar(255)",
         "StockID"           => "Varchar",
         "BasePrice"         => "Currency",
-        "URLSegment"        => "Varchar",
         "Content"           => "HTMLText",
         "MetaDescription"   => "Text",
         "ExtraMeta"         => "HTMLText",
@@ -125,7 +124,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
     private static $searchable_fields = [
         "Title",
-        "URLSegment",
         "Content",
         "StockID",
         "MetaDescription"
@@ -326,22 +324,22 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     }
     
     /**
-     * Return the link for this {@link Product}
-     *
-     * 
-     * @param string $action See {@link Link()}
-     * @return string
-     */
-    public function RelativeLink($action = null)
+	 * Return the link for this {@link Product}
+	 *
+	 * 
+	 * @param string $action See {@link Link()}
+	 * @return string
+	 */
+	public function RelativeLink($action = null)
     {
-        $base = $this->URLSegment;
+        $link = Controller::join_links(
+            $this->ID,
+            $action
+        );
 		
-		$return = $this->extend('updateRelativeLink', $base, $action);
+		$this->extend('updateRelativeLink', $link, $action);
 
-        if($return && is_array($return))
-            return $return[count($return) - 1];
-        else
-            return Controller::join_links($base, $action);
+        return $link;
 	}
     
     
@@ -491,25 +489,11 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             $product_types[$classname] = $instance->i18n_singular_name();
         }
 
-        // If CMS Installed, use URLSegmentField, otherwise use text
-        // field for URL
-        if (class_exists('\SilverStripe\CMS\Forms\SiteTreeURLSegmentField')) {
-            $baseLink = Controller::join_links(
-                Director::absoluteBaseURL()
-            );
-                        
-            $url_field = \SilverStripe\CMS\Forms\SiteTreeURLSegmentField::create("URLSegment");
-            $url_field->setURLPrefix($baseLink);
-        } else {
-            $url_field = TextField::create("URLSegment");
-        }
-
         $fields = FieldList::create(
             $rootTab = TabSet::create("Root",
                 // Main Tab Fields
                 $tabMain = Tab::create('Main',
                     TextField::create("Title", $this->fieldLabel('Title')),
-                    $url_field,
                     HTMLEditorField::create('Content', $this->fieldLabel('Content'))
                         ->setRows(20)
                         ->addExtraClass('stacked'),
@@ -594,105 +578,11 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         return RequiredFields::create($required);
     }
 
-    /**
-     * Returns TRUE if this object has a URLSegment value that does not conflict with any other objects. This methods
-     * checks for:
-     *   - A page with the same URLSegment that has a conflict.
-     *   - Conflicts with actions on the parent page.
-     *   - A conflict caused by a root page having the same URLSegment as a class name.
-     *
-     * @return bool
-     */
-    public function validURLSegment()
+    public function onAfterWrite()
     {
-        $objects_to_check = array(
-            CatalogueProduct::class,
-            CatalogueCategory::class
-        );
-        
-        if (class_exists("\SilverStripe\CMS\Model\SiteTree")) {
-            $objects_to_check[] = "\SilverStripe\CMS\Model\SiteTree";
-        }
+        parent::onAfterWrite();
 
-        $segment = Convert::raw2sql($this->URLSegment);
 
-        foreach ($objects_to_check as $classname) {
-            $return = $classname::get()
-                ->filter(array(
-                    "URLSegment"=> $segment,
-                    "ID:not"    => $this->ID
-                ));
-
-            if ($return->exists()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Generate a URL segment based on the title provided.
-     *
-     * If {@link Extension}s wish to alter URL segment generation, they can do so by defining
-     * updateURLSegment(&$url, $title).  $url will be passed by reference and should be modified.
-     * $title will contain the title that was originally used as the source of this generated URL.
-     * This lets extensions either start from scratch, or incrementally modify the generated URL.
-     *
-     * @param string $title Page title.
-     * @return string Generated url segment
-     */
-    public function generateURLSegment($title)
-    {
-        $filter = URLSegmentFilter::create();
-        $t = $filter->filter($title);
-
-        // Fallback to generic page name if path is empty (= no valid, convertable characters)
-        if (!$t || $t == '-' || $t == '-1') {
-            $t = "page-$this->ID";
-        }
-
-        // Hook for extensions
-        $this->extend('updateURLSegment', $t, $title);
-
-        return $t;
-    }
-
-    public function onBeforeWrite()
-    {
-        parent::onBeforeWrite();
-
-        // If there is no URLSegment set, generate one from Title
-        if ((!$this->URLSegment || $this->URLSegment == 'new-product') && $this->Title) {
-            $this->URLSegment = $this->generateURLSegment($this->Title);
-        } elseif ($this->isChanged('URLSegment', 2)) {
-            // Do a strict check on change level, to avoid double encoding caused by
-            // bogus changes through forceChange()
-            $filter = URLSegmentFilter::create();
-            $this->URLSegment = $filter->filter($this->URLSegment);
-            // If after sanitising there is no URLSegment, give it a reasonable default
-            if (!$this->URLSegment) {
-                $this->URLSegment = "page-$this->ID";
-            }
-        }
-
-        // Ensure that this object has a non-conflicting URLSegment value.
-        $count = 2;
-        while (!$this->validURLSegment()) {
-            $this->URLSegment = preg_replace('/-[0-9]+$/', null, $this->URLSegment) . '-' . $count;
-            $count++;
-        }
-        
-        if ($this->ID && $this->config()->auto_stock_id && !$this->StockID) {
-            $title = "";
-            
-            foreach (explode("-", $this->URLSegment) as $string) {
-                $string = substr($string, 0, 1);
-                $title .= $string;
-            }
-            
-            $this->StockID = $title . "-" . $this->ID;
-        }
     }
     
     public function requireDefaultRecords()

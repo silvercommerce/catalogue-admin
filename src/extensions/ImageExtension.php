@@ -1,6 +1,6 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Extensions;
+namespace SilverCommerce\Catalogue\Extensions;
 
 use SilverStripe\ORM\DataExtension;
 

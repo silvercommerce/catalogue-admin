@@ -1,10 +1,10 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue;
+namespace SilverCommerce\Catalogue;
 
 use SilverStripe\View\ViewableData;
-use ilateral\SilverStripe\Catalogue\Model\CatalogueCategory;
-use ilateral\SilverStripe\Catalogue\Model\CatalogueProduct;
+use SilverCommerce\Catalogue\Model\CatalogueCategory;
+use SilverCommerce\Catalogue\Model\CatalogueProduct;
 
 /**
  * Object designed to allow injection of catalogue global settings into
@@ -23,16 +23,6 @@ class Catalogue extends ViewableData
      * @config
      */
     private static $price_includes_tax = true;
-    
-    /**
-     * Use this setting to disable the frontend product and category
-     * pages (useful if you are building only a product management
-     * system, etc).
-     * 
-     * @var Boolean
-     * @config
-     */
-    private static $enable_frontend = true;
     
     /**
      * Gets a list of all Categories, either top level (default) or

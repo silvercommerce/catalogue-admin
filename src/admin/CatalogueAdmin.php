@@ -1,10 +1,10 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Admin;
+namespace SilverCommerce\Catalogue\Admin;
 
 use SilverStripe\Admin\ModelAdmin;
-use ilateral\SilverStripe\Catalogue\Forms\GridField\GridFieldConfig_Catalogue;
-use ilateral\SilverStripe\Catalogue\Import\ProductCSVBulkLoader;
+use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_Catalogue;
+use SilverCommerce\Catalogue\Import\ProductCSVBulkLoader;
 use \Product;
 use \Category;
 

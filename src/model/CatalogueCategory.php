@@ -1,6 +1,6 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Model;
+namespace SilverCommerce\Catalogue\Model;
 
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ArrayList;
@@ -20,10 +20,11 @@ use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\TreeDropdownField;
-use SilverStripe\View\Parsers\URLSegmentFilter;
-use ilateral\SilverStripe\Catalogue\Forms\GridField\GridFieldConfig_Catalogue;
-use ilateral\SilverStripe\Catalogue\Forms\GridField\GridFieldConfig_CatalogueRelated;
-use ilateral\SilverStripe\Catalogue\Catalogue;
+use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Core\Convert;
+use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_Catalogue;
+use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_CatalogueRelated;
+use SilverCommerce\Catalogue\Catalogue;
 use Catagory;
 
 /**
@@ -53,7 +54,6 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     
     private static $db = [
         "Title"             => "Varchar",
-        "URLSegment"        => "Varchar",
         "Sort"              => "Int",
         "MetaDescription"   => "Text",
         "ExtraMeta"         => "HTMLText",
@@ -78,7 +78,6 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     private static $summary_fields = [
         'Title'         => 'Title',
-        'URLSegment'    => 'URLSegment',
         'Disabled'      => 'Disabled'
     ];
 
@@ -168,45 +167,19 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 	 */
 	public function RelativeLink($action = null)
     {
-        $base = $this->URLSegment;
+        $link = Controller::join_links(
+            $this->ID,
+            $action
+        );
 		
-		$return = $this->extend('updateRelativeLink', $base, $action);
+		$this->extend('updateRelativeLink', $link, $action);
 
-        if($return && is_array($return))
-            return $return[count($return) - 1];
-        else
-            return Controller::join_links($base, $action);
+        return $link;
 	}
 
     public function getMenuTitle()
     {
         return $this->Title;
-    }
-
-    /**
-     * Returns TRUE if this is the currently active category being used
-     * to handle a request.
-     *
-     * @return bool
-     */
-    public function isCurrent()
-    {
-        return $this->URLSegment == Controller::curr()->request->getURL();
-    }
-
-
-    /**
-     * Check if this object is in the currently active section (e.g. it
-     * is either current or one of it's children is currently being
-     * viewed).
-     *
-     * @return bool
-     */
-    public function isSection()
-    {
-        return $this->isCurrent() || (
-            method_exists(Director::get_current_page(), "getAncestors") && in_array($this->URLSegment, Director::get_current_page()->getAncestors()->column('URLSegment'))
-        );
     }
 
     /**
@@ -349,19 +322,6 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             $instance = singleton($classname);
             $category_types[$classname] = $instance->i18n_singular_name();
         }
-        
-        // If CMS Installed, use URLSegmentField, otherwise use text
-        // field for URL
-        if (class_exists("\SilverStripe\CMS\Forms\SiteTreeURLSegmentField")) {
-            $baseLink = Controller::join_links(
-                Director::absoluteBaseURL()
-            );
-                        
-            $url_field = \SilverStripe\CMS\Forms\SiteTreeURLSegmentField::create("URLSegment");
-            $url_field->setURLPrefix($baseLink);
-        } else {
-            $url_field = TextField::create("URLSegment");
-        }
 
         $fields->removeByName("Sort");
         $fields->removeByName("Disabled");
@@ -372,7 +332,6 @@ class CatalogueCategory extends DataObject implements PermissionProvider
         $fields->addFieldsToTab(
             "Root.Main",
             array(
-                $url_field,
                 ToggleCompositeField::create(
                     'Metadata',
                     _t('CatalogueAdmin.MetadataToggle', 'Metadata'),
@@ -477,37 +436,6 @@ class CatalogueCategory extends DataObject implements PermissionProvider
         return $fields;
     }
 
-    public function onBeforeWrite()
-    {
-        parent::onBeforeWrite();
-
-        // Only call on first creation, ir if title is changed
-        if (($this->ID == 0) || $this->isChanged('Title') || !($this->URLSegment)) {
-            // Set the URL Segment, so it can be accessed via the controller
-            $filter = URLSegmentFilter::create();
-            $t = $filter->filter($this->Title);
-
-            // Fallback to generic name if path is empty (= no valid, convertable characters)
-            if (!$t || $t == '-' || $t == '-1') {
-                $t = "category-{$this->ID}";
-            }
-
-            // Ensure that this object has a non-conflicting URLSegment value.
-            $existing_cats = CatalogueCategory::get()->filter('URLSegment', $t)->count();
-            $existing_products = CatalogueProduct::get()->filter('URLSegment', $t)->count();
-            
-            if (class_exists('\SilverStripe\CMS\Model\SiteTree')) {
-                $existing_pages = \SilverStripe\CMS\Model\SiteTree::get()->filter('URLSegment', $t)->count();
-            } else {
-                $existing_pages = 0;
-            }
-
-            $count = (int)$existing_cats + (int)$existing_products + (int)$existing_pages;
-
-            $this->URLSegment = ($count) ? $t . '-' . ($count + 1) : $t;
-        }
-    }
-
     public function onBeforeDelete()
     {
         parent::onBeforeDelete();
@@ -524,7 +452,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
         parent::requireDefaultRecords();
         
         // Alter any existing recods that might have the wrong classname
-        foreach (CatalogueCategory::get()->filter("ClassName", "CatalogueCategory") as $category) {
+        foreach (CatalogueCategory::get()->filter("ClassName", CatalogueCategory::class) as $category) {
             $category->ClassName = "Category";
             $category->write();
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Forms\GridField;
+namespace SilverCommerce\Catalogue\Forms\GridField;
 
 class CategoryDetailForm extends EnableDisableDetailForm
 {
@@ -8,11 +8,11 @@ class CategoryDetailForm extends EnableDisableDetailForm
 
 class CategoryDetailForm_ItemRequest extends EnableDisableDetailForm_ItemRequest
 {
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         'edit',
         'view',
         'ItemEditForm'
-    );
+    ];
 
     /**
      *

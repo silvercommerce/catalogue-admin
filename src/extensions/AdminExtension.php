@@ -1,6 +1,6 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Extensions;
+namespace SilverCommerce\Catalogue\Extensions;
 
 use SilverStripe\Core\Extension;
 use SilverStripe\View\Requirements;
@@ -15,6 +15,6 @@ class AdminExtension extends Extension
 {
     public function init()
     {
-        Requirements::css('i-lateral/silverstripe-catalogue: client/dist/css/admin.css');
+        Requirements::css('silvercommerce/catalogue: client/dist/css/admin.css');
     }
 }

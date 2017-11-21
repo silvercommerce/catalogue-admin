@@ -1,5 +1,5 @@
 {
-  "name": "i-lateral/silverstripe-catalogue",
+  "name": "silvercommerce/catalogue",
   "description": "Silverstripe module allowing creation of a custom product catalog with products and categories that can be created via the admin and accessed via their own URL's (like more conventional page objects)",
     "type": "silverstripe-module",
     "homepage": "http://github.com/i-lateral/silverstripe-catalogue",
@@ -12,7 +12,7 @@
         }
     ],
     "support": {
-        "issues": "http://github.com/i-lateral/silverstripe-catalogue/issues"
+        "issues": "https://github.com/silvercommerce/catalogue/issues"
     },
     "require": {
         "silverstripe/framework": "~4.0",
@@ -28,7 +28,7 @@
     },
     "autoload": {
         "psr-4": {
-            "ilateral\\SilverStripe\\Catalogue\\": "src/"
+            "SilverCommerce\\Catalogue\\": "src/"
         }
     },
     "suggest": {

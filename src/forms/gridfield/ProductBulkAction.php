@@ -1,6 +1,6 @@
 <?php
 
-namespace ilateral\SilverStripe\Catalogue\Forms\GridField;
+namespace SilverCommerce\Catalogue\Forms\GridField;
 
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPRequest;
@@ -16,19 +16,19 @@ use Colymba\BulkManager\BulkAction\Handler as GridFieldBulkActionHandler;
 class ProductBulkAction extends GridFieldBulkActionHandler
 {
 
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         'disable',
         'enable'
-    );
+    ];
 
-    private static $url_handlers = array(
+    private static $url_handlers = [
         "disable" => "disable",
         "enable" => "enable"
-    );
+    ];
 
     public function disable(HTTPRequest $request)
     {
-        $ids = array();
+        $ids = [];
 
         foreach ($this->getRecords() as $record) {
             array_push($ids, $record->ID);
@@ -49,7 +49,7 @@ class ProductBulkAction extends GridFieldBulkActionHandler
 
     public function enable(HTTPRequest $request)
     {
-        $ids = array();
+        $ids = [];
 
         foreach ($this->getRecords() as $record) {
             array_push($ids, $record->ID);
