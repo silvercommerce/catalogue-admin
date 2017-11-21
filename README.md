@@ -12,7 +12,7 @@ Orders" module).
 ## Dependancies
 
 * [SilverStripe Framework](https://github.com/silverstripe/silverstripe-framework)
-* [SilverStripe SiteConfig] (https://github.com/silverstripe/silverstripe-siteconfig)
+* [SilverStripe SiteConfig](https://github.com/silverstripe/silverstripe-siteconfig)
 * [Grid Field Extensions](https://github.com/symbiote/silverstripe-gridfieldextensions)
 * [Grid Field Bulk Editing Tools](https://github.com/colymba/GridFieldBulkEditingTools)
 
