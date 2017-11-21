@@ -28,10 +28,10 @@ class GridFieldConfig_CatalogueRelated extends GridFieldConfig_Catalogue {
 		$this->removeComponentsByType('GridFieldDeleteAction');
         $this->removeComponentsByType('GridFieldExportButton');
 
-		$this->addComponent(GridFieldAddExistingAutocompleter::create('buttons-before-right'));
-		$this->addComponent(GridFieldDeleteAction::create(true));
+		$this->addComponent(new GridFieldAddExistingAutocompleter('buttons-before-right'));
+		$this->addComponent(new GridFieldDeleteAction(true));
 		if ($sort_col != false) {
-			$this->addComponent(GridFieldOrderableRows::create($sort_col));
+			$this->addComponent(new GridFieldOrderableRows($sort_col));
 		}
 	}
 }

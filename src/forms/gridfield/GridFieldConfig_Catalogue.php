@@ -74,19 +74,19 @@ class GridFieldConfig_Catalogue extends GridFieldConfig {
 		$this->addComponent(new GridFieldExportButton("buttons-before-right"));
 
 		// Setup Bulk manager
-		$manager = GridFieldBulkManager::create();
+		$manager = new GridFieldBulkManager();
         $manager->removeBulkAction("unLink");
         
         $manager->addBulkAction(
             'disable',
             'Disable',
-            'CatalogueProductBulkAction'
+            ProductBulkAction::class
         );
         
         $manager->addBulkAction(
             'enable',
             'Enable',
-            'CatalogueProductBulkAction'
+            ProductBulkAction::class
         );
 
 		$this->addComponent($manager);
@@ -97,18 +97,18 @@ class GridFieldConfig_Catalogue extends GridFieldConfig {
 
 		// If we are manageing a category, use the relevent field, else
 		// use product
-		if ($classname == "Category") {
-			$this->addComponent(CategoryDetailForm::create());
-			$add_button->setItemRequestClass("CatalogueCategoryDetailForm_ItemRequest");
+		if ($classname == Category::class) {
+			$this->addComponent(new CategoryDetailForm());
+			$add_button->setItemRequestClass(CategoryDetailForm_ItemRequest::class);
 		} else {
-			$this->addComponent(EnableDisableDetailForm::create());
-			$add_button->setItemRequestClass("CatalogueEnableDisableDetailForm_ItemRequest");
+			$this->addComponent(new EnableDisableDetailForm());
+			$add_button->setItemRequestClass(EnableDisableDetailForm_ItemRequest::class);
 		}
 
 		$this->addComponent($add_button);
 
 		if ($sort_col) {
-			$this->addComponent(GridFieldOrderableRows::create($sort_col));
+			$this->addComponent(new GridFieldOrderableRows($sort_col));
 		}
 
 		$sort->setThrowExceptionOnBadDataType(false);
