@@ -122,8 +122,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     private static $searchable_fields = [
         "Title",
         "Content",
-        "StockID",
-        "MetaDescription"
+        "StockID"
     ];
 
     private static $default_sort = [
