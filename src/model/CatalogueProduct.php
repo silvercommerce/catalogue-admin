@@ -28,14 +28,13 @@ use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\CurrencyField;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_CatalogueRelated;
 use SilverStripe\Assets\Image;
 use SilverCommerce\Catalogue\Catalogue;
 use SilverStripe\Core\Convert;
-use TaxRate;
-use CatalogueCategory;
 use Catagory;
 
 /**
@@ -76,8 +75,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "StockID"           => "Varchar",
         "BasePrice"         => "Currency",
         "Content"           => "HTMLText",
-        "MetaDescription"   => "Text",
-        "ExtraMeta"         => "HTMLText",
         "Disabled"          => "Boolean"
     ];
     
@@ -392,32 +389,23 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      * Return sorted images, if no images exist, create a new opbject set
      * with a blank product image in it.
      *
-     * @return ArrayList
+     * @return SSList
      */
     public function SortedImages()
     {
+        $config = SiteConfig::current_site_config();
+        $default_image = SiteConfig::current_site_config()->DefaultProductImage();
+        
         if ($this->Images()->exists()) {
             $images = $this->Images()->Sort('SortOrder');
-        } elseif (SiteConfig::current_site_config()->DefaultProductImageID) {
-            $default_image = SiteConfig::current_site_config()->DefaultProductImage();
-            
+        } elseif ($default_image->exists()) {
+            $default_image = $default_image;
             $images = ArrayList::create();
             $images->add($default_image);
         } else {
-            $no_image = "assets/no-image.png";
-            $no_image_path = Controller::join_links(BASE_PATH, $no_image);
+            $no_image = $this->find_or_create_no_image();
             
-            // if no-image does not exist, copy to the assets folder
-            if (!file_exists($no_image_path)) {
-                $curr_file = Controller::join_links(
-                    BASE_PATH,
-                    "catalogue/images/no-image.png"
-                );
-                
-                copy($curr_file, $no_image_path);
-            }
-            
-            $images = ArrayList::Create();
+            $images = ArrayList::create();
             
             $default_image = Image::create();
             $default_image->ID = -1;
@@ -428,6 +416,41 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         }
 
         return $images;
+    }
+
+    /**
+     * If we have no image set, and none in the @link SiteConfig
+     * then use our template no image
+     *
+     * @return void
+     */
+    private function find_or_create_no_image()
+    {
+        $no_image = "assets/no-image.png";
+        $no_image_path = Controller::join_links(
+            BASE_PATH,
+            $no_image
+        );
+
+        // if no-image does not exist, copy to the assets folder
+        if (file_exists($no_image_path)) {
+            return $no_image_path;
+        } else {
+            $reflector = new \ReflectionClass(CatalogueProduct::class);
+            $curr_file = dirname($reflector->getFileName());
+
+            $curr_file = str_replace(
+                "src/model",
+                "client/dist/images/no-image.png",
+                $curr_file
+            );
+            
+            if (copy($curr_file, $no_image_path)) {
+                return $no_image_path;
+            } else {
+                return "";
+            }
+        }
     }
 
     /**
@@ -461,7 +484,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
     public function getCMSThumbnail()
     {
-        return $this->SortedImages()->first()->PaddedImage(50, 50);
+        return $this
+            ->SortedImages()
+            ->first()
+            ->Pad(50, 50);
     }
 
     public function getCategoriesList()
@@ -490,56 +516,38 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         }
 
         $fields = FieldList::create(
-            $rootTab = TabSet::create("Root",
+            TabSet::create(
+                "Root",
                 // Main Tab Fields
-                $tabMain = Tab::create('Main',
-                    TextField::create("Title", $this->fieldLabel('Title')),
-                    HTMLEditorField::create('Content', $this->fieldLabel('Content'))
-                        ->setRows(20)
-                        ->addExtraClass('stacked'),
-                    ToggleCompositeField::create('Metadata', _t('CatalogueAdmin.MetadataToggle', 'Metadata'),
-                        array(
-                            $metaFieldDesc = TextareaField::create("MetaDescription", $this->fieldLabel('MetaDescription')),
-                            $metaFieldExtra = TextareaField::create("ExtraMeta", $this->fieldLabel('ExtraMeta'))
-                        )
-                    )->setHeadingLevel(4)
-                ),
-                $tabSettings = Tab::create('Settings',
-                    NumericField::create("BasePrice", _t("Catalogue.Price", "Price")),
-                    TextField::create("StockID", $this->fieldLabel('StockID'))
-                        ->setRightTitle(_t("Catalogue.StockIDHelp", "For example, a product SKU")),
+                Tab::create(
+                    'Main',
+                    TextField::create("Title"),
+                    CurrencyField::create("BasePrice"),
                     DropdownField::create(
                         "TaxRateID",
                         $this->fieldLabel('TaxRate'),
                         TaxRate::get()->map()
                     )->setEmptyString(_t("Catalogue.None", "None")),
-                    TreeMultiSelectField::create("Categories", null, "CatalogueCategory"),
+                    TextField::create("StockID")
+                        ->setRightTitle(_t("Catalogue.StockIDHelp", "For example, a product SKU")),
+                    HTMLEditorField::create('Content')
+                ),
+                // Settings fields
+                Tab::create(
+                    'Settings',
                     DropdownField::create(
                         "ClassName",
                         _t("CatalogueAdmin.ProductType", "Type of product"),
                         $product_types
+                    ),
+                    TreeMultiSelectField::create(
+                        "Categories",
+                        null,
+                        CatalogueCategory::class
                     )
                 )
             )
         );
-
-        // Help text for MetaData on page content editor
-        $metaFieldDesc
-            ->setRightTitle(
-                _t(
-                    'CatalogueAdmin.MetaDescHelp',
-                    "Search engines use this content for displaying search results (although it will not influence their ranking)."
-                )
-            )
-            ->addExtraClass('help');
-        $metaFieldExtra
-            ->setRightTitle(
-                _t(
-                    'CatalogueAdmin.MetaExtraHelp',
-                    "HTML tags for additional meta information. For example &lt;meta name=\"customName\" content=\"your custom content here\" /&gt;"
-                )
-            )
-            ->addExtraClass('help');
 
         if ($this->ID) {
             $fields->addFieldToTab(
@@ -556,9 +564,8 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                 GridField::create(
                     'RelatedProducts',
                     "",
-                    $this->RelatedProducts(),
-                    new GridFieldConfig_CatalogueRelated("Product",null,'SortOrder')
-                )
+                    $this->RelatedProducts()
+                )->setConfig(new GridFieldConfig_CatalogueRelated(Product::class,null,'SortOrder'))
             );
         }
 
