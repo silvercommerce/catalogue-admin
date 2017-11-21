@@ -6,6 +6,7 @@ use SilverStripe\ORM\DataExtension;
 use SilverStripe\Assets\Image;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
@@ -27,39 +28,45 @@ use SilverCommerce\Catalogue\Model\TaxRate;
 class SiteConfigExtension extends DataExtension
 {
     
+    private static $db = [
+        "ShowPriceAndTax" => "Boolean"
+    ];
+
     private static $has_one = [
         'DefaultProductImage'    => Image::class
     ];
 
     public function updateCMSFields(FieldList $fields)
-    {
+    {   
         // Add config sets
-        $fields->addFieldToTab(
+        $fields->addFieldsToTab(
             'Root.Catalogue',
-            UploadField::create(
-                'DefaultProductImage',
-                _t("Catalogue.DefaultProductImage", 'Default product image')
-            )
-        );
-        
-        // Add config sets
-        $fields->addFieldToTab(
-            'Root.Catalogue',
-            GridField::create(
-                'TaxRates',
-                _t("Catalogue.TaxRates", "Tax Rates"),
-                TaxRate::get(),
-                GridFieldConfig::create()->addComponents(
-                    new GridFieldToolbarHeader(),
-                    new GridFieldAddNewButton('toolbar-header-right'),
-                    new GridFieldSortableHeader(),
-                    new GridFieldDataColumns(),
-                    new GridFieldPaginator(5),
-                    new GridFieldEditButton(),
-                    new GridFieldDeleteAction(),
-                    new GridFieldDetailForm()
-                )
-            )
+            [
+                UploadField::create(
+                    'DefaultProductImage',
+                    _t("Catalogue.DefaultProductImage", 'Default product image')
+                ),
+                GridField::create(
+                    'TaxRates',
+                    _t("Catalogue.TaxRates", "Tax Rates"),
+                    TaxRate::get(),
+                    GridFieldConfig::create()->addComponents(
+                        new GridFieldToolbarHeader(),
+                        new GridFieldAddNewButton('toolbar-header-right'),
+                        new GridFieldSortableHeader(),
+                        new GridFieldDataColumns(),
+                        new GridFieldPaginator(5),
+                        new GridFieldEditButton(),
+                        new GridFieldDeleteAction(),
+                        new GridFieldDetailForm()
+                    )
+                ),
+                CheckboxField::create("ShowPriceAndTax")
+                    ->setDescription(_t(
+                        "Catalogue.ShowPriceAndTaxDescription",
+                        "Show product prices including tax"
+                    )),
+            ]
         );
     }
 }

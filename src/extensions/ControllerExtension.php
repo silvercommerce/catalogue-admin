@@ -17,7 +17,7 @@ class ControllerExtension extends Extension
     /**
      * Inject our product catalogue object into the controller
      * 
-     * @return ProductCatalogue
+     * @return Catalogue
      */
     public function getCatalogue()
     {

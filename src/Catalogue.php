@@ -10,19 +10,12 @@ use SilverCommerce\Catalogue\Model\CatalogueProduct;
  * Object designed to allow injection of catalogue global settings into
  * templates without having to flood the base controller with methods   
  * 
- * @author i-lateral (http://www.i-lateral.com)
+ * @author Mo <morven@ilateral.co.uk>
+ * @author Mark <mark@ilateral.co.uk>
  * @package catalogue
  */
 class Catalogue extends ViewableData
 {
-    
-    /**
-     * Show price including tax in catalogue and product pages?
-     * 
-     * @var Boolean
-     * @config
-     */
-    private static $price_includes_tax = true;
     
     /**
      * Gets a list of all Categories, either top level (default) or
@@ -45,11 +38,11 @@ class Catalogue extends ViewableData
      *
      * @param ParentCategoryID the ID of the parent category
      */
-    public function Products($ParentCategoryID = 0)
+    public function Products($ParentID = 0)
     {
         return CatalogueProduct::get()
             ->filter(array(
-                "ParentID" => $ParentCategoryID,
+                "ParentID" => $ParentID,
                 "Disabled" => 0
             ));
     }

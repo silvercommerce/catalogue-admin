@@ -157,7 +157,8 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function IncludesTax()
     {
-        return Catalogue::config()->price_includes_tax;
+        $config = SiteConfig::current_site_config();
+        return $config->ShowPriceAndTax;
     }
     
     /**
@@ -259,9 +260,9 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getTaxString()
     {
-        if ($this->TaxRateID && Catalogue::config()->price_includes_tax) {
+        if ($this->TaxRate()->exists() && $this->IncludesTax()) {
             $return = _t("Catalogue.TaxIncludes", "Includes") . " " . $this->TaxRate()->Title;
-        } elseif ($this->TaxRateID && !Catalogue::config()->price_includes_tax) {
+        } elseif ($this->TaxRate->exists() && !$this->IncludesTax()) {
             $return = _t("Catalogue.TaxExcludes", "Excludes") . " " . $this->TaxRate()->Title;
         } else {
             $return = "";
