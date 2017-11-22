@@ -26,8 +26,12 @@ class TaxRate extends DataObject
      */
     private static $db = [
         "Title" => "Varchar",
-        "Amount"=> "Decimal",
-        "Code"  => "Varchar"
+        "Amount"=> "Decimal"
+    ];
+
+    private static $summary_fields = [
+        "Title",
+        "Amount"
     ];
     
     public function getCMSValidator()
