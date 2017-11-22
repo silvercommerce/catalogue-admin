@@ -50,21 +50,18 @@ class TaxRate extends DataObject
             $vat = TaxRate::create();
             $vat->Title = "VAT";
             $vat->Amount = 20;
-            $vat->Code = "T1";
             $vat->write();
             DB::alteration_message('VAT tax rate created.', 'created');
             
             $reduced = TaxRate::create();
             $reduced->Title = "Reduced rate";
             $reduced->Amount = 5;
-            $reduced->Code = "T2";
             $reduced->write();
             DB::alteration_message('Reduced tax rate created.', 'created');
             
             $zero = TaxRate::create();
             $zero->Title = "Zero rate";
             $zero->Amount = 0;
-            $zero->Code = "T4";
             $zero->write();
             DB::alteration_message('Zero tax rate created.', 'created');
         }
