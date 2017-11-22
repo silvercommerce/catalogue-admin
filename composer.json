@@ -1,8 +1,8 @@
 {
-  "name": "silvercommerce/catalogue",
+  "name": "silvercommerce/catalogue-admin",
   "description": "Silverstripe module allowing creation of a custom product catalog with products and categories that can be created via the admin and accessed via their own URL's (like more conventional page objects)",
     "type": "silverstripe-vendormodule",
-    "homepage": "http://github.com/i-lateral/silverstripe-catalogue",
+    "homepage": "https://github.com/silvercommerce/catalogue-admin",
     "keywords": [
         "silverstripe",
         "commerce",
@@ -23,7 +23,7 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/silvercommerce/catalogue/issues"
+        "issues": "https://github.com/silvercommerce/catalogue-admin/issues"
     },
     "require": {
         "silverstripe/framework": "~4.0",
@@ -39,7 +39,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SilverCommerce\\Catalogue\\": "src/"
+            "SilverCommerce\\CatalogueAdmin\\": "src/"
         }
     },
     "suggest": {
