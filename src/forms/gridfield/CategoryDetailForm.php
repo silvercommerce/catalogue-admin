@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Forms\GridField;
+namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
 class CategoryDetailForm extends EnableDisableDetailForm
 {

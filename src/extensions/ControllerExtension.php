@@ -1,9 +1,9 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Extensions;
+namespace SilverCommerce\CatalogueAdmin\Extensions;
 
 use SilverStripe\Core\Extension;
-use SilverCommerce\Catalogue\Catalogue;
+use SilverCommerce\CatalogueAdmin\Catalogue;
 
 /**
  * Extension for Controller that provide additional methods to all

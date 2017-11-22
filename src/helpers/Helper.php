@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Helpers;
+namespace SilverCommerce\CatalogueAdmin\Helpers;
 
 use SilverStripe\View\ViewableData;
 

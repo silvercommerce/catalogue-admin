@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Forms\GridField;
+namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;

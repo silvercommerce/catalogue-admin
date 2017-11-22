@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Extensions;
+namespace SilverCommerce\CatalogueAdmin\Extensions;
 
 use SilverStripe\Core\Extension;
 use SilverStripe\View\Requirements;
@@ -15,6 +15,6 @@ class AdminExtension extends Extension
 {
     public function init()
     {
-        Requirements::css('silvercommerce/catalogue: client/dist/css/admin.css');
+        Requirements::css('silvercommerce/catalogue-admin: client/dist/css/admin.css');
     }
 }

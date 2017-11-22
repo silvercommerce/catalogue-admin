@@ -1,10 +1,10 @@
 <?php
 
-namespace SilverCommerce\Catalogue;
+namespace SilverCommerce\CatalogueAdmin;
 
 use SilverStripe\View\ViewableData;
-use SilverCommerce\Catalogue\Model\CatalogueCategory;
-use SilverCommerce\Catalogue\Model\CatalogueProduct;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 
 /**
  * Object designed to allow injection of catalogue global settings into

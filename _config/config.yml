@@ -3,13 +3,13 @@ Name: catalogueconfig
 ---
 SilverStripe\Admin\LeftAndMain:
   extensions:
-    - SilverCommerce\Catalogue\Extensions\AdminExtension
+    - SilverCommerce\CatalogueAdmin\Extensions\AdminExtension
 SilverStripe\SiteConfig\SiteConfig:
   extensions:
-    - SilverCommerce\Catalogue\Extensions\SiteConfigExtension
+    - SilverCommerce\CatalogueAdmin\Extensions\SiteConfigExtension
 SilverStripe\Framework\Controller\Controller:
   extensions:
-    - SilverCommerce\Catalogue\Extensions\ControllerExtension
+    - SilverCommerce\CatalogueAdmin\Extensions\ControllerExtension
 SilverStripe\Assets\Image:
   extensions:
-    - SilverCommerce\Catalogue\Extensions\ImageExtension
+    - SilverCommerce\CatalogueAdmin\Extensions\ImageExtension

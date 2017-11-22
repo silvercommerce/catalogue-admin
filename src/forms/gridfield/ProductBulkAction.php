@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Forms\GridField;
+namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPRequest;

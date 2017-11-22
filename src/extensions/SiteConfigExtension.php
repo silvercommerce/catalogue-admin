@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Extensions;
+namespace SilverCommerce\CatalogueAdmin\Extensions;
 
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\Assets\Image;
@@ -17,7 +17,7 @@ use SilverStripe\Forms\GridField\GridFieldEditButton;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldConfig;
-use SilverCommerce\Catalogue\Model\TaxRate;
+use SilverCommerce\CatalogueAdmin\Model\TaxRate;
 
 /**
  * Provides additional settings required globally for this module

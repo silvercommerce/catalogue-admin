@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Model;
+namespace SilverCommerce\CatalogueAdmin\Model;
 
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ArrayList;
@@ -22,9 +22,9 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Core\Convert;
-use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_Catalogue;
-use SilverCommerce\Catalogue\Forms\GridField\GridFieldConfig_CatalogueRelated;
-use SilverCommerce\Catalogue\Catalogue;
+use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
+use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
+use SilverCommerce\CatalogueAdmin\Catalogue;
 use \Category;
 
 /**

@@ -10,9 +10,9 @@ Wilr\GoogleSitemaps\GoogleSitemap:
 Only:
   classexists: Wilr\GoogleSitemaps\Extensions\GoogleSitemapSiteTreeExtension
 ---
-SilverCommerce\Catalogue\Model\CatalogueProduct:
+SilverCommerce\CatalogueAdmin\Model\CatalogueProduct:
   extensions:
     - Wilr\GoogleSitemaps\Extensions\GoogleSitemapSiteTreeExtension
-SilverCommerce\Catalogue\Model\CatalogueCategory:
+SilverCommerce\CatalogueAdmin\Model\CatalogueCategory:
   extensions:
     - Wilr\GoogleSitemaps\Extensions\GoogleSitemapSiteTreeExtension

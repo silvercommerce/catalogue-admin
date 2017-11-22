@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverCommerce\Catalogue\Model;
+namespace SilverCommerce\CatalogueAdmin\Model;
 
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
