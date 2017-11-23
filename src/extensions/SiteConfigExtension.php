@@ -17,7 +17,6 @@ use SilverStripe\Forms\GridField\GridFieldEditButton;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldConfig;
-use SilverCommerce\CatalogueAdmin\Model\TaxRate;
 
 /**
  * Provides additional settings required globally for this module
@@ -45,21 +44,6 @@ class SiteConfigExtension extends DataExtension
                 UploadField::create(
                     'DefaultProductImage',
                     _t("Catalogue.DefaultProductImage", 'Default product image')
-                ),
-                GridField::create(
-                    'TaxRates',
-                    _t("Catalogue.TaxRates", "Tax Rates"),
-                    TaxRate::get(),
-                    GridFieldConfig::create()->addComponents(
-                        new GridFieldToolbarHeader(),
-                        new GridFieldAddNewButton('toolbar-header-right'),
-                        new GridFieldSortableHeader(),
-                        new GridFieldDataColumns(),
-                        new GridFieldPaginator(5),
-                        new GridFieldEditButton(),
-                        new GridFieldDeleteAction(),
-                        new GridFieldDetailForm()
-                    )
                 ),
                 CheckboxField::create("ShowPriceAndTax")
                     ->setDescription(_t(

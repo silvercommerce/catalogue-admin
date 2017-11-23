@@ -35,7 +35,10 @@ use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelat
 use SilverStripe\Assets\Image;
 use SilverCommerce\CatalogueAdmin\Catalogue;
 use SilverStripe\Core\Convert;
+use SilverCommerce\TaxAdmin\Model\TaxCategory;
+use SilverCommerce\TaxAdmin\Helpers\MathsHelper;
 use Catagory;
+use Product;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -79,7 +82,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     ];
     
     private static $has_one = [
-        "TaxRate"           => TaxRate::class
+        "TaxCategory"       => TaxCategory::class
     ];
 
     private static $many_many = [
@@ -101,11 +104,11 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "CategoriesList"    => "Varchar",
         "CMSThumbnail"      => "Varchar",
         "Price"             => "Currency",
-        "Tax"               => "Currency",
-        "TaxPercent"        => "Decimal",
+        "TaxRate"           => "Decimal",
+        "TaxAmount"         => "Currency",
         "PriceAndTax"       => "Currency",
         "TaxString"         => "Varchar",
-        "IncludeTax"        => "Boolean"
+        "IncludesTax"       => "Boolean"
     ];
 
     private static $summary_fields = [
@@ -114,7 +117,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "StockID"       => "StockID",
         "Title"         => "Title",
         "BasePrice"     => "Price",
-        "TaxRate.Amount"=> "Tax Percent",
+        "TaxRate"       => "Tax Percent",
         "CategoriesList"=> "Categories",
         "Disabled"      => "Disabled"
     ];
@@ -155,7 +158,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      * 
      * @return boolean
      */
-    public function IncludesTax()
+    public function getIncludesTax()
     {
         $config = SiteConfig::current_site_config();
         return $config->ShowPriceAndTax;
@@ -166,56 +169,14 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      * we can tap into extensions and allow third party modules to alter
      * this (to add items such as tax, bulk pricing, etc).
      *
-     * @param int $decimal_size Should we round this number to a
-     *             specific size? If set will round the output.
      * @return Float
      */
-    public function getPrice($decimal_size = null)
+    public function getPrice()
     {
         $price = $this->BasePrice;
-        
-        $new_price = $this->extend("updatePrice", $price);
-        if ($new_price && is_array($new_price)) {
-            $price = $new_price[0];
-        }
-        
-        if($decimal_size) {
-            $price = number_format($price, $decimal_size);
-        }
-        
+        $this->extend("updatePrice", $price);
+
         return $price;
-    }
-    
-    /**
-     * Get a final tax amount for this product. You can extend this
-     * method using "UpdateTax" allowing third party modules to alter
-     * tax amounts dynamically.
-     *
-     * @param int $decimal_size Should we round this number to a
-     *             specific size? If set will round the output. 
-     * @return Float
-     */
-    public function getTax($decimal_size = null)
-    {
-        $price = $this->BasePrice;
-        
-        // If tax is enabled in config, add it to the final price
-        if ($this->TaxRateID && $this->TaxRate()->Amount) {
-            $tax = ($price / 100) * $this->TaxRate()->Amount;
-        } else {
-            $tax = 0;
-        }
-        
-        $new_tax = $this->extend("updateTax", $tax);
-        if ($new_tax && is_array($new_tax)) {
-            $tax = $new_tax[0];
-        }
-        
-        if($decimal_size) {
-            $tax = number_format($tax, $decimal_size);
-        }
-        
-        return $tax;
     }
     
     /**
@@ -223,30 +184,52 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      *
      * @return Decimal
      */
-    public function getTaxPercent()
+    public function getTaxRate()
     {
-        return ($this->TaxRateID) ? $this->TaxRate()->Amount : 0;
+        $rate = 0;
+        $cat = $this->TaxCategory();
+
+        if (!$cat->exists() || !$cat->Rates()->exists()) {
+            $config = SiteConfig::current_site_config();
+            $cat = $config
+                ->TaxCategories()
+                ->sort("Default", "DESC")
+                ->first();
+        }
+
+        if ($cat->exists() && $cat->Rates()->exists()) {
+            $rate = $cat->Rates()->first()->Rate;
+        }
+
+        $this->extend("updateTaxRate", $rate);
+
+        return $rate;
+    }
+
+    /**
+     * Get a final tax amount for this product. You can extend this
+     * method using "UpdateTax" allowing third party modules to alter
+     * tax amounts dynamically.
+     * 
+     * @return Float
+     */
+    public function getTaxAmount($decimal_size = null)
+    {
+        $tax = ($this->BasePrice / 100) * $this->TaxRate;
+        $this->extend("updateTaxAmount", $tax);
+        
+        return $tax;
     }
     
     /**
      * Get the final price of this product, including tax (if any)
      *
-     * @param int $decimal_size Should we round this number to a
-     *             specific size? If set will round the output. 
      * @return Float
      */
-    public function getPriceAndTax($decimal_size = null)
+    public function getPriceAndTax()
     {
-        $price = $this->Price + $this->Tax;
-        
-        $new_price = $this->extend("updatePriceAndTax", $price);
-        if ($new_price && is_array($new_price)) {
-            $price = $new_price[0];
-        }
-        
-        if($decimal_size) {
-            $price = number_format($price, $decimal_size);
-        }
+        $price = $this->Price + $this->TaxAmount;
+        $this->extend("updatePriceAndTax", $price);
         
         return $price;
     }
@@ -260,10 +243,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getTaxString()
     {
-        if ($this->TaxRate()->exists() && $this->IncludesTax()) {
-            $return = _t("Catalogue.TaxIncludes", "Includes") . " " . $this->TaxRate()->Title;
-        } elseif ($this->TaxRate->exists() && !$this->IncludesTax()) {
-            $return = _t("Catalogue.TaxExcludes", "Excludes") . " " . $this->TaxRate()->Title;
+        if ($this->TaxRate && $this->IncludesTax) {
+            $return = _t("CatalogueAdmin.TaxIncludes", "Includes") . " " . $this->TaxRate()->Title;
+        } elseif ($this->TaxRate && !$this->IncludesTax) {
+            $return = _t("CatalogueAdmin.TaxExcludes", "Excludes") . " " . $this->TaxRate()->Title;
         } else {
             $return = "";
         }
@@ -323,7 +306,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     /**
 	 * Return the link for this {@link Product}
 	 *
-	 * 
 	 * @param string $action See {@link Link()}
 	 * @return string
 	 */
@@ -351,7 +333,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     {
         $ancestors = ArrayList::create();
         $object    = $this->Categories()->first();
-        
+
         if($object) {
             if($include_parent) $ancestors->push($object);
 
@@ -359,7 +341,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                 $ancestors->push($object);
             }
         }
-        
+
         $this->extend('updateAncestors', $ancestors, $include_parent);
 
         return $ancestors;
@@ -492,16 +474,8 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
     public function getCategoriesList()
     {
-        $list = '';
-
-        if ($this->Categories()->exists()) {
-            foreach ($this->Categories() as $category) {
-                $list .= $category->Title;
-                $list .= ', ';
-            }
-        }
-
-        return $list;
+        $list = $this->Categories()->column("Title");
+        return implode(", ", $list);
     }
 
     public function getCMSFields()
@@ -509,6 +483,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         // Get a list of available product classes
         $classnames = array_values(ClassInfo::subclassesFor("Product"));
         $product_types = array();
+        $config = SiteConfig::current_site_config();
 
         foreach ($classnames as $classname) {
             $instance = singleton($classname);
@@ -524,10 +499,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                     TextField::create("Title"),
                     CurrencyField::create("BasePrice"),
                     DropdownField::create(
-                        "TaxRateID",
-                        $this->fieldLabel('TaxRate'),
-                        TaxRate::get()->map()
-                    )->setEmptyString(_t("Catalogue.None", "None")),
+                        "TaxCategoryID",
+                        _t("CatalogueAdmin.Tax", "Tax"),
+                        $config->TaxCategories()->map()
+                    )->setEmptyString(_t("CatalogueAdmin.None", "None")),
                     TextField::create("StockID")
                         ->setRightTitle(_t("Catalogue.StockIDHelp", "For example, a product SKU")),
                     HTMLEditorField::create('Content')
@@ -565,7 +540,11 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                     'RelatedProducts',
                     "",
                     $this->RelatedProducts()
-                )->setConfig(new GridFieldConfig_CatalogueRelated(Product::class,null,'SortOrder'))
+                )->setConfig(new GridFieldConfig_CatalogueRelated(
+                    Product::class,
+                    null,
+                    'SortOrder'
+                ))
             );
         }
 
@@ -576,20 +555,13 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
     public function getCMSValidator()
     {
-        $required = array("Title");
+        $required = ["Title"];
         
         if (!$this->config()->auto_stock_id) {
             $required[] = "StockID";
         }
         
         return RequiredFields::create($required);
-    }
-
-    public function onAfterWrite()
-    {
-        parent::onAfterWrite();
-
-
     }
     
     public function requireDefaultRecords()

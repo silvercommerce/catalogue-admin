@@ -4,6 +4,8 @@ namespace SilverCommerce\CatalogueAdmin\Import;
 
 use SilverStripe\Dev\CsvBulkLoader;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
+use SilverCommerce\TaxAdmin\Model\TaxRate;
+use SilverStripe\SiteConfig\SiteConfig;
 use Product;
 
 /**
@@ -101,12 +103,15 @@ class ProductCSVBulkLoader extends CsvBulkLoader
     
     public static function importTaxPercent(&$obj, $val, $record)
     {
-        $tax_rate = TaxRate::get()
-            ->filter("Amount", $val)
+        $config = SiteConfig::current_site_config();
+
+        $tax = $config
+            ->TaxCategories()
+            ->filter("Rates.Rate", $val)
             ->first();
         
-        if ($tax_rate) {
-            $obj->TaxRateID = $tax_rate->ID;
+        if ($tax) {
+            $obj->TaxCategoryID = $tax->ID;
         }
     }
 }
