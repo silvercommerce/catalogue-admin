@@ -7,9 +7,6 @@ SilverStripe\Admin\LeftAndMain:
 SilverStripe\SiteConfig\SiteConfig:
   extensions:
     - SilverCommerce\CatalogueAdmin\Extensions\SiteConfigExtension
-SilverStripe\Framework\Controller\Controller:
-  extensions:
-    - SilverCommerce\CatalogueAdmin\Extensions\ControllerExtension
 SilverStripe\Assets\Image:
   extensions:
     - SilverCommerce\CatalogueAdmin\Extensions\ImageExtension
