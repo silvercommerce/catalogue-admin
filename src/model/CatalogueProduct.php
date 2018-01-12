@@ -287,6 +287,16 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             $this->RelativeLink($action)
         );
     }
+
+    /**
+     * Shortcut for the first category assigned to this product
+     *
+     * @return CaltalogueCategory
+     */
+    public function Parent()
+    {
+        return $this->Categories()->first();
+    }
     
     /**
      * Get the absolute URL for this page, including protocol and host.
