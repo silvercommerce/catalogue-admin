@@ -243,12 +243,28 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getTaxString()
     {
-        if ($this->TaxRate && $this->IncludesTax) {
-            $return = _t("CatalogueAdmin.TaxIncludes", "Includes") . " " . $this->TaxRate()->Title;
+        $cat = $this->TaxCategory();
+        $return = 0;
+
+        if (!$cat->exists() || !$cat->Rates()->exists()) {
+            $rate = $config
+                ->TaxCategories()
+                ->sort("Default", "DESC")
+                ->first();
+        }
+        
+        if ($rate && $this->IncludesTax) {
+            $return = _t(
+                "CatalogueFrontend.TaxIncludes",
+                "Includes {title}",
+                ["title" => $rate->Title]
+            );
         } elseif ($this->TaxRate && !$this->IncludesTax) {
-            $return = _t("CatalogueAdmin.TaxExcludes", "Excludes") . " " . $this->TaxRate()->Title;
-        } else {
-            $return = "";
+            $return = _t(
+                "CatalogueFrontend.TaxExcludes",
+                "Excludes {title}",
+                ["title" => $rate->Title]
+            );
         }
         
         return $return;
