@@ -178,15 +178,14 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
         return $price;
     }
-    
+
     /**
-     * Get the percentage amount of tax applied to this item
+     * Get the tax rate from the current category (or default) 
      *
-     * @return Decimal
+     * @return TaxRate | null
      */
-    public function getTaxRate()
+    public function getTaxFromCategory()
     {
-        $rate = 0;
         $cat = $this->TaxCategory();
 
         if (!$cat->exists() || !$cat->Rates()->exists()) {
@@ -198,7 +197,22 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         }
 
         if ($cat->exists() && $cat->Rates()->exists()) {
-            $rate = $cat->Rates()->first()->Rate;
+            return $cat->Rates()->first();
+        }
+    }
+    
+    /**
+     * Get the percentage amount of tax applied to this item
+     *
+     * @return Decimal
+     */
+    public function getTaxRate()
+    {
+        $rate = 0;
+        $obj = $this->getTaxFromCategory();
+
+        if ($obj) {
+            $rate = $obj->Rate;
         }
 
         $this->extend("updateTaxRate", $rate);
@@ -243,30 +257,22 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getTaxString()
     {
-        $cat = $this->TaxCategory();
-        $return = 0;
+        $return = "";
 
-        if (!$cat->exists() || !$cat->Rates()->exists()) {
-            $rate = $config
-                ->TaxCategories()
-                ->sort("Default", "DESC")
-                ->first();
-        }
-        
-        if ($rate && $this->IncludesTax) {
+        if ($this->IncludesTax) {
             $return = _t(
                 "CatalogueFrontend.TaxIncludes",
-                "Includes {title}",
+                "inc. {title}",
                 ["title" => $rate->Title]
             );
-        } elseif ($this->TaxRate && !$this->IncludesTax) {
+        } else {
             $return = _t(
                 "CatalogueFrontend.TaxExcludes",
-                "Excludes {title}",
+                "ex. {title}",
                 ["title" => $rate->Title]
             );
         }
-        
+
         return $return;
     }
 
