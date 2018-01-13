@@ -173,7 +173,12 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getPrice()
     {
-        $price = $this->BasePrice;
+        if ($this->IncludesTax) {
+            $price = $this->BasePrice + $this->TaxAmount;
+        } else {
+            $price = $this->BasePrice;
+        }
+        
         $this->extend("updatePrice", $price);
 
         return $price;
@@ -258,14 +263,15 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     public function getTaxString()
     {
         $return = "";
+        $rate = $this->getTaxFromCategory();
 
-        if ($this->IncludesTax) {
+        if ($rate && $this->IncludesTax) {
             $return = _t(
                 "CatalogueFrontend.TaxIncludes",
                 "inc. {title}",
                 ["title" => $rate->Title]
             );
-        } else {
+        } elseif ($rate && !$this->IncludesTax) {
             $return = _t(
                 "CatalogueFrontend.TaxExcludes",
                 "ex. {title}",
