@@ -39,6 +39,9 @@ use SilverCommerce\TaxAdmin\Model\TaxCategory;
 use SilverCommerce\TaxAdmin\Helpers\MathsHelper;
 use Catagory;
 use Product;
+use Colymba\BulkUpload\BulkUploader;
+use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
+use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -563,13 +566,17 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         );
 
         if ($this->ID) {
+            $config = GridFieldConfig_RelationEditor::create();
+            $config->addComponent(new BulkUploader())
+                ->addComponent(new GridFieldOrderableRows('SortOrder'));
+
             $fields->addFieldToTab(
                 'Root.Images',
-                UploadField::create(
+                GridField::create(
                     'Images',
                     $this->fieldLabel('Images'),
                     $this->Images()
-                )
+                )->setConfig($config)
             );
 
             $fields->addFieldToTab(
