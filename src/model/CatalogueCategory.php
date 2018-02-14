@@ -89,6 +89,11 @@ class CatalogueCategory extends DataObject implements PermissionProvider
         "Sort" => "ASC"
     ];
 
+    private static $searchable_fields = [
+        "Title",
+        "Content"
+    ];
+
     /**
      * Is this object enabled?
      * 
@@ -213,18 +218,36 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      * categories)
      *
      * @param int $maxDepth The maximum depth to traverse.
-     *
+     * @param boolean $unlinked Whether to link page titles.
+     * @param boolean|string $stopAtType ClassName to stop the upwards traversal.
+     * @param boolean $showHidden Include pages marked with the attribute ShowInMenus = 0
      * @return string The breadcrumb trail.
      */
-    public function Breadcrumbs($maxDepth = 20)
+    public function Breadcrumbs($maxDepth = 20, $unlinked = false, $stopAtType = false, $showHidden = false, $delimiter = '&raquo;')
     {
-        $template = new SSViewer('BreadcrumbsTemplate');
+        $page = $this;
+        $pages = array();
 
-        return $template->process(
-            $this->customise(ArrayData::create([
-                'Pages' => ArrayList::create(array_reverse($this->parentStack()))
-            ]))
-        );
+        while ($page
+            && $page->exists()
+            && (!$maxDepth || count($pages) < $maxDepth)
+            && (!$stopAtType || $page->ClassName != $stopAtPageType)
+        ) {
+            if ($page->ID == $this->ID) {
+                $pages[] = $page;
+            }
+
+            $page = $page->Parent();
+        }
+
+        $pages = ArrayList::create(array_reverse($pages));
+        $template = SSViewer::create('BreadcrumbsTemplate');
+        
+        return $template->process($this->customise(new ArrayData(array(
+            "Pages" => $pages,
+            "Unlinked" => $unlinked,
+            "Delimiter" => $delimiter,
+        ))));
     }
 
     /**
