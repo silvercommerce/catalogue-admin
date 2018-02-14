@@ -566,19 +566,13 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         );
 
         if ($this->ID) {
-            $config = GridFieldConfig_RelationEditor::create();
-            $config->addComponent(new BulkUploader())
-                ->addComponent(new GridFieldOrderableRows('SortOrder'));
-
-            $config->getComponentByType(BulkUploader::class)
-                ->setUfSetup('setFolderName', 'ProductImages/'.$this->ID.'-'.$this->URLSegment);
             $fields->addFieldToTab(
                 'Root.Images',
-                GridField::create(
+                UploadField::create(
                     'Images',
                     $this->fieldLabel('Images'),
                     $this->Images()
-                )->setConfig($config)
+                )
             );
 
             $fields->addFieldToTab(
