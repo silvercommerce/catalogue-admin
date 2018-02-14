@@ -39,6 +39,9 @@ use SilverCommerce\TaxAdmin\Model\TaxCategory;
 use SilverCommerce\TaxAdmin\Helpers\MathsHelper;
 use Catagory;
 use Product;
+use Colymba\BulkUpload\BulkUploader;
+use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
+use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -563,13 +566,19 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         );
 
         if ($this->ID) {
+            $config = GridFieldConfig_RelationEditor::create();
+            $config->addComponent(new BulkUploader())
+                ->addComponent(new GridFieldOrderableRows('SortOrder'));
+
+            $config->getComponentByType(BulkUploader::class)
+                ->setUfSetup('setFolderName', 'ProductImages/'.$this->ID.'-'.$this->URLSegment);
             $fields->addFieldToTab(
                 'Root.Images',
-                UploadField::create(
+                GridField::create(
                     'Images',
                     $this->fieldLabel('Images'),
                     $this->Images()
-                )
+                )->setConfig($config)
             );
 
             $fields->addFieldToTab(
@@ -703,5 +712,23 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         }
 
         return false;
+    }
+
+    /**
+     * Returns the page in the current page stack of the given level. Level(1) will return the main menu item that
+     * we're currently inside, etc.
+     *
+     * @param int $level
+     * @return SiteTree
+     */
+    public function Level($level)
+    {
+        $parent = $this;
+        $stack = array($parent);
+        while (($parent = $parent->Parent()) && $parent->exists()) {
+            array_unshift($stack, $parent);
+        }
+
+        return isset($stack[$level-1]) ? $stack[$level-1] : null;
     }
 }
