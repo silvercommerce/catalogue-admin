@@ -570,6 +570,8 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             $config->addComponent(new BulkUploader())
                 ->addComponent(new GridFieldOrderableRows('SortOrder'));
 
+            $config->getComponentByType(BulkUploader::class)
+                ->setUfSetup('setFolderName', 'ProductImages/'.$this->ID.'-'.$this->URLSegment);
             $fields->addFieldToTab(
                 'Root.Images',
                 GridField::create(
@@ -710,5 +712,23 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         }
 
         return false;
+    }
+
+    /**
+     * Returns the page in the current page stack of the given level. Level(1) will return the main menu item that
+     * we're currently inside, etc.
+     *
+     * @param int $level
+     * @return SiteTree
+     */
+    public function Level($level)
+    {
+        $parent = $this;
+        $stack = array($parent);
+        while (($parent = $parent->Parent()) && $parent->exists()) {
+            array_unshift($stack, $parent);
+        }
+
+        return isset($stack[$level-1]) ? $stack[$level-1] : null;
     }
 }
