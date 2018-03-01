@@ -16,8 +16,11 @@ use SilverStripe\Forms\GridField\GridFieldPageCount;
 use SilverStripe\Forms\GridField\GridFieldPaginator;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
-use Colymba\BulkManager\BulkManager as GridFieldBulkManager;
 use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
+use Colymba\BulkManager\BulkManager as GridFieldBulkManager;
+use Colymba\BulkManager\BulkAction\UnlinkHandler;
+use SilverCommerce\CatalogueAdmin\BulkManager\DisableHandler;
+use SilverCommerce\CatalogueAdmin\BulkManager\EnableHandler;
 
 /**
  * Allows editing of records contained within the GridField, instead of only allowing the ability to view records in
@@ -75,19 +78,9 @@ class GridFieldConfig_Catalogue extends GridFieldConfig {
 
 		// Setup Bulk manager
 		$manager = new GridFieldBulkManager();
-        $manager->removeBulkAction("unLink");
-        
-        $manager->addBulkAction(
-            'disable',
-            'Disable',
-            ProductBulkAction::class
-        );
-        
-        $manager->addBulkAction(
-            'enable',
-            'Enable',
-            ProductBulkAction::class
-        );
+        $manager->removeBulkAction(UnlinkHandler::class);
+        $manager->addBulkAction(DisableHandler::class);
+        $manager->addBulkAction(EnableHandler::class);
 
 		$this->addComponent($manager);
 
