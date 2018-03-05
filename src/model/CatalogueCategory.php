@@ -40,7 +40,7 @@ use \Category;
  */
 class CatalogueCategory extends DataObject implements PermissionProvider
 {
-    
+
     private static $table_name = 'CatalogueCategory';
 
     /**
@@ -51,7 +51,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      * @config
      */
     private static $description = "A basic product category";
-    
+
     private static $db = [
         "Title"             => "Varchar",
         "Content"           => "HTMLText",
@@ -103,7 +103,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     {
         return ($this->Disabled) ? false : true;
     }
-    
+
     /**
      * Is this object disabled?
      * 
@@ -146,7 +146,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             $this->RelativeLink($action)
         );
     }
-    
+
     /**
      * Get the absolute URL for this page, including protocol and host.
      *
@@ -161,7 +161,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             return Director::absoluteURL($this->Link($action));
         }
     }
-    
+
     /**
 	 * Return the link for this {@link Category}
 	 *
@@ -226,22 +226,20 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     public function Breadcrumbs($maxDepth = 20, $unlinked = false, $stopAtType = false, $showHidden = false, $delimiter = '&raquo;')
     {
         $page = $this;
-        $pages = array();
+        $pages = [];
 
         while ($page
             && $page->exists()
             && (!$maxDepth || count($pages) < $maxDepth)
             && (!$stopAtType || $page->ClassName != $stopAtPageType)
         ) {
-            if ($page->ID == $this->ID) {
-                $pages[] = $page;
-            }
-
+            $pages[] = $page;
             $page = $page->Parent();
         }
 
         $pages = ArrayList::create(array_reverse($pages));
         $template = SSViewer::create('BreadcrumbsTemplate');
+
         
         return $template->process($this->customise(new ArrayData(array(
             "Pages" => $pages,
@@ -276,7 +274,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             ->Children()
             ->filter("Disabled", 0);
     }
-    
+
     /**
      * Return a list of products in that category that are not disabled
      *
@@ -288,7 +286,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             ->Products()
             ->filter("Disabled", 0);
     }
-    
+
     /**
      * Return sorted products in thsi category that are enabled
      *
@@ -310,7 +308,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      *
      * @return ArrayList
      */
-    public function AllProducts($sort = array())
+    public function AllProducts($sort = [])
     {
         // Setup the default sort for our products
         if (count($sort) == 0) {
@@ -330,6 +328,24 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             ))->sort($sort);
 
         return $products;
+    }
+
+    /**
+     * Get a list of all tags on products within this category
+     * 
+     * @return SSList|null
+     */
+    public function AllTags()
+    {
+        $products = $this->AllProducts();
+
+        if ($products->exists()) {
+            return ProductTag::get()
+                ->filter(
+                    "Products.ID",
+                    $products->column("ID")
+                );
+        }
     }
 
     public function getCMSFields()
@@ -431,7 +447,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             }
         }
     }
-    
+
     public function requireDefaultRecords()
     {
         parent::requireDefaultRecords();
@@ -442,7 +458,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             $category->write();
         }
     }
-    
+
     public function providePermissions()
     {
         return [
@@ -482,13 +498,10 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             $memberID = Member::currentUserID();
         }
 
-        if ($memberID && Permission::checkMember($memberID, array("ADMIN", "CATALOGUE_ADD_CATEGORIES"))) {
-            return true;
-        } elseif ($memberID && $memberID == $this->CustomerID) {
-            return true;
-        }
-
-        return false;
+        return Permission::checkMember(
+            $memberID,
+            ["ADMIN", "CATALOGUE_ADD_CATEGORIES"]
+        );
     }
 
     public function canEdit($member = null, $context = [])
@@ -501,13 +514,10 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             $memberID = Member::currentUserID();
         }
 
-        if ($memberID && Permission::checkMember($memberID, array("ADMIN", "CATALOGUE_EDIT_CATEGORIES"))) {
-            return true;
-        } elseif ($memberID && $memberID == $this->CustomerID) {
-            return true;
-        }
-
-        return false;
+        return Permission::checkMember(
+            $memberID,
+            ["ADMIN", "CATALOGUE_EDIT_CATEGORIES"]
+        );
     }
 
     public function canDelete($member = null, $context = [])
@@ -520,12 +530,9 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             $memberID = Member::currentUserID();
         }
 
-        if ($memberID && Permission::checkMember($memberID, array("ADMIN", "CATALOGUE_DELETE_CATEGORIES"))) {
-            return true;
-        } elseif ($memberID && $memberID == $this->CustomerID) {
-            return true;
-        }
-
-        return false;
+        return Permission::checkMember(
+            $memberID,
+            ["ADMIN", "CATALOGUE_DELETE_CATEGORIES"]
+        );
     }
 }
