@@ -42,6 +42,7 @@ use Product;
 use Colymba\BulkUpload\BulkUploader;
 use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -417,63 +418,26 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     public function SortedImages()
     {
         $config = SiteConfig::current_site_config();
-        $default_image = SiteConfig::current_site_config()->DefaultProductImage();
-        
+        $default_image = $config->DefaultProductImage();
+
+        // If this product has images, display them
         if ($this->Images()->exists()) {
-            $images = $this->Images()->Sort('SortOrder');
-        } elseif ($default_image->exists()) {
-            $default_image = $default_image;
-            $images = ArrayList::create();
-            $images->add($default_image);
-        } else {
-            $no_image = $this->find_or_create_no_image();
-            
-            $images = ArrayList::create();
-            
-            $default_image = Image::create();
-            $default_image->ID = -1;
-            $default_image->Title = "No Image Available";
-            $default_image->FileName = $no_image;
-            
-            $images->add($default_image);
+            return $this->Images()->Sort('SortOrder');
         }
 
+        $images = ArrayList::create();
+        
+        // Try to use default from SiteConfig, if none is available,
+        // use a system default
+        if ($default_image->exists()) {
+            $image = $default_image;
+        } else {
+            $image = Helper::generate_no_image();
+        }
+
+        // Finally return a list with only the default
+        $images->add($image);
         return $images;
-    }
-
-    /**
-     * If we have no image set, and none in the @link SiteConfig
-     * then use our template no image
-     *
-     * @return void
-     */
-    private function find_or_create_no_image()
-    {
-        $no_image = "assets/no-image.png";
-        $no_image_path = Controller::join_links(
-            BASE_PATH,
-            $no_image
-        );
-
-        // if no-image does not exist, copy to the assets folder
-        if (file_exists($no_image_path)) {
-            return $no_image_path;
-        } else {
-            $reflector = new \ReflectionClass(CatalogueProduct::class);
-            $curr_file = dirname($reflector->getFileName());
-
-            $curr_file = str_replace(
-                "src/model",
-                "client/dist/images/no-image.png",
-                $curr_file
-            );
-            
-            if (copy($curr_file, $no_image_path)) {
-                return $no_image_path;
-            } else {
-                return "";
-            }
-        }
     }
 
     /**

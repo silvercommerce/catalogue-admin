@@ -2,21 +2,29 @@
 
 namespace SilverCommerce\CatalogueAdmin\Extensions;
 
-use SilverStripe\ORM\DataExtension;
+use Exception;
+use ReflectionClass;
+use SilverStripe\Assets\File;
 use SilverStripe\Assets\Image;
-use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\Control\Controller;
 use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Assets\Storage\AssetStore;
 use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
-use SilverStripe\Forms\GridField\GridFieldAddNewButton;
-use SilverStripe\Forms\GridField\GridFieldSortableHeader;
-use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\Forms\GridField\GridFieldPaginator;
-use SilverStripe\Forms\GridField\GridFieldEditButton;
-use SilverStripe\Forms\GridField\GridFieldDeleteAction;
-use SilverStripe\Forms\GridField\GridFieldDetailForm;
+use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Forms\GridField\GridFieldConfig;
+use SilverStripe\Forms\GridField\GridFieldPaginator;
+use SilverStripe\Forms\GridField\GridFieldDetailForm;
+use SilverStripe\Forms\GridField\GridFieldEditButton;
+use SilverStripe\Forms\GridField\GridFieldDataColumns;
+use SilverStripe\Forms\GridField\GridFieldDeleteAction;
+use SilverStripe\Forms\GridField\GridFieldAddNewButton;
+use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
+use SilverStripe\Forms\GridField\GridFieldSortableHeader;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
+use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 
 /**
  * Provides additional settings required globally for this module
@@ -52,5 +60,15 @@ class SiteConfigExtension extends DataExtension
                     )),
             ]
         );
+    }
+
+    public function onAfterWrite()
+    {
+        // Setup default product image (if not set)
+        if (!$this->owner->DefaultProductImage()->exists()) {
+            $image = Helper::generate_no_image();
+            $this->owner->DefaultProductImageID = $image->ID;
+            $this->owner->write();
+        }
     }
 }
