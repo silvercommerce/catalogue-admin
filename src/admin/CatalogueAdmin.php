@@ -7,6 +7,7 @@ use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use \Product;
 use \Category;
+use SilverCommerce\CatalogueAdmin\Model\ProductTag;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
@@ -41,7 +42,8 @@ class CatalogueAdmin extends ModelAdmin
 
     private static $managed_models = [
         Product::class,
-        Category::class
+        Category::class,
+        ProductTag::class
     ];
 
     private static $model_importers = [

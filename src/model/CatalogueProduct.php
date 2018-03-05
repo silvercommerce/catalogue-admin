@@ -2,47 +2,49 @@
 
 namespace SilverCommerce\CatalogueAdmin\Model;
 
-use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\ArrayList;
+use Product;
+use Catagory;
 use SilverStripe\ORM\DB;
-use SilverStripe\Security\PermissionProvider;
-use SilverStripe\Security\Member;
-use SilverStripe\Security\Permission;
-use SilverStripe\SiteConfig\SiteConfig;
-use SilverStripe\Control\Controller;
-use SilverStripe\Control\Director;
+use SilverStripe\Forms\Tab;
+use SilverStripe\Core\Convert;
+use SilverStripe\Assets\Image;
+use SilverStripe\Forms\TabSet;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\SSViewer;
 use SilverStripe\View\ArrayData;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Forms\TextField;
-use SilverStripe\Forms\TextareaField;
-use SilverStripe\Forms\ToggleCompositeField;
-use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\DropdownField;
-use SilverStripe\Forms\TreeDropdownField;
-use SilverStripe\Forms\Tab;
-use SilverStripe\Forms\TabSet;
-use SilverStripe\Forms\TreeMultiselectField;
-use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
-use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\RequiredFields;
+use SilverStripe\Security\Member;
+use SilverStripe\Control\Director;
+use SilverStripe\TagField\TagField;
+use SilverStripe\Security\Security;
+use SilverStripe\Forms\NumericField;
+use Colymba\BulkUpload\BulkUploader;
+use SilverStripe\Control\Controller;
+use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\CurrencyField;
-use SilverStripe\AssetAdmin\Forms\UploadField;
-use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
-use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
-use SilverStripe\Assets\Image;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Security\Permission;
+use SilverStripe\Forms\RequiredFields;
+use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\ToggleCompositeField;
+use SilverStripe\Forms\TreeMultiselectField;
 use SilverCommerce\CatalogueAdmin\Catalogue;
-use SilverStripe\Core\Convert;
+use SilverStripe\Security\PermissionProvider;
+use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverCommerce\TaxAdmin\Model\TaxCategory;
 use SilverCommerce\TaxAdmin\Helpers\MathsHelper;
-use Catagory;
-use Product;
-use Colymba\BulkUpload\BulkUploader;
-use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
-use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
+use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
+use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
+use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
+use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -91,6 +93,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
     private static $many_many = [
         "Images"            => Image::class,
+        "Tags"              => ProductTag::class,
         "RelatedProducts"   => CatalogueProduct::class
     ];
 
@@ -106,6 +109,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     private static $casting = [
         "MenuTitle"         => "Varchar",
         "CategoriesList"    => "Varchar",
+        "TagsList"          => "Varchar",
         "CMSThumbnail"      => "Varchar",
         "Price"             => "Currency",
         "TaxRate"           => "Decimal",
@@ -123,6 +127,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "BasePrice"     => "Price",
         "TaxRate"       => "Tax Percent",
         "CategoriesList"=> "Categories",
+        "TagsList"      => "Tags",
         "Disabled"      => "Disabled"
     ];
 
@@ -357,7 +362,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             $this->ID,
             $action
         );
-		
+
 		$this->extend('updateRelativeLink', $link, $action);
 
         return $link;
@@ -477,9 +482,27 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             ->Pad(50, 50);
     }
 
+    /**
+     * Generate a comma seperated list of category names
+     * assigned to this product.
+     * 
+     * @return string
+     */
     public function getCategoriesList()
     {
         $list = $this->Categories()->column("Title");
+        return implode(", ", $list);
+    }
+
+    /**
+     * Generate a comma seperated list of tag names
+     * assigned to this product.
+     * 
+     * @return string
+     */
+    public function getTagsList()
+    {
+        $list = $this->Tags()->column("Title");
         return implode(", ", $list);
     }
 
@@ -524,7 +547,14 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                         "Categories",
                         null,
                         CatalogueCategory::class
-                    )
+                    ),
+                    TagField::create(
+                        'Tags',
+                        _t(__CLASS__ . '.Tags', 'Tags'),
+                        ProductTag::get(),
+                        $this->Tags()
+                    )->setCanCreate($this->canCreateTags())
+                    ->setShouldLazyLoad(true)
                 )
             )
         );
@@ -625,13 +655,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             $memberID = Member::currentUserID();
         }
 
-        if ($memberID && Permission::checkMember($memberID, array("ADMIN", "CATALOGUE_ADD_PRODUCTS"))) {
-            return true;
-        } elseif ($memberID && $memberID == $this->CustomerID) {
-            return true;
-        }
-
-        return true;
+        return Permission::checkMember(
+            $memberID,
+            ["ADMIN", "CATALOGUE_ADD_PRODUCTS"]
+        );
     }
 
     public function canEdit($member = null, $context = [])
@@ -644,13 +671,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             $memberID = Member::currentUserID();
         }
 
-        if ($memberID && Permission::checkMember($memberID, array("ADMIN", "CATALOGUE_EDIT_PRODUCTS"))) {
-            return true;
-        } elseif ($memberID && $memberID == $this->CustomerID) {
-            return true;
-        }
-
-        return false;
+        return Permission::checkMember(
+            $memberID,
+            ["ADMIN", "CATALOGUE_EDIT_PRODUCTS"]
+        );
     }
 
     public function canDelete($member = null)
@@ -663,13 +687,29 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             $memberID = Member::currentUserID();
         }
 
-        if ($memberID && Permission::checkMember($memberID, array("ADMIN", "CATALOGUE_DELETE_PRODUCTS"))) {
-            return true;
-        } elseif ($memberID && $memberID == $this->CustomerID) {
-            return true;
+        return Permission::checkMember(
+            $memberID,
+            ["ADMIN", "CATALOGUE_DELETE_PRODUCTS"]
+        );
+    }
+
+    /**
+     * Determine whether user can create new tags.
+     *
+     * @param null|int|Member $member
+     *
+     * @return bool
+     */
+    public function canCreateTags($member = null)
+    {
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
         }
 
-        return false;
+        return Permission::checkMember(
+            $member,
+            ["ADMIN", "CATALOGUE_ADD_TAGS"]
+        );
     }
 
     /**
