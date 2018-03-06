@@ -415,6 +415,19 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     }
 
     /**
+     * Get a primary image (first image we find)
+     * for this product
+     * 
+     * @return Image
+     */
+    public function PrimaryImage()
+    {
+        return $this
+            ->SortedImages()
+            ->first();
+    }
+
+    /**
      * Return sorted images, if no images exist, create a new opbject set
      * with a blank product image in it.
      *
