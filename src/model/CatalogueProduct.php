@@ -84,6 +84,8 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "StockID"           => "Varchar",
         "BasePrice"         => "Currency",
         "Content"           => "HTMLText",
+        "ContentSummary"    => "Text",
+        "Weight"            => "Float",
         "Disabled"          => "Boolean"
     ];
     
@@ -567,14 +569,19 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                     'Main',
                     TextField::create("Title"),
                     CurrencyField::create("BasePrice"),
-                    DropdownField::create(
-                        "TaxCategoryID",
-                        _t("CatalogueAdmin.Tax", "Tax"),
-                        $config->TaxCategories()->map()
-                    )->setEmptyString(_t("CatalogueAdmin.None", "None")),
                     TextField::create("StockID")
                         ->setRightTitle(_t("Catalogue.StockIDHelp", "For example, a product SKU")),
-                    HTMLEditorField::create('Content')
+                    HTMLEditorField::create('Content'),
+                    ToggleCompositeField::create(
+                        "SummaryFields",
+                        _t(
+                            "SilverCommerce\CatalogueAdmin.SummaryInfo",
+                            "Summary Info"
+                        ),
+                        [
+                            TextareaField::create("ContentSummary")
+                        ]
+                    )
                 ),
                 // Settings fields
                 Tab::create(
@@ -584,6 +591,11 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                         _t("CatalogueAdmin.ProductType", "Type of product"),
                         $product_types
                     ),
+                    DropdownField::create(
+                        "TaxCategoryID",
+                        _t("SilverCommerce\CatalogueAdmin.Tax", "Tax"),
+                        $config->TaxCategories()->map()
+                    )->setEmptyString(_t("SilverCommerce\CatalogueAdmin.None", "None")),
                     TreeMultiSelectField::create(
                         "Categories",
                         $this->fieldLabel("Categories"),
@@ -595,7 +607,9 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                         ProductTag::get(),
                         $this->Tags()
                     )->setCanCreate($this->canCreateTags())
-                    ->setShouldLazyLoad(true)
+                    ->setShouldLazyLoad(true),
+                    NumericField::create("Weight")
+                        ->setScale(2)
                 )
             )
         );
