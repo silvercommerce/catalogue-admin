@@ -529,6 +529,24 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         return implode(", ", $list);
     }
 
+    /**
+     * Generate a stock ID, based on the title and ID
+     * of this product
+     * 
+     * @return string
+     */
+    protected function generateStockID()
+    {
+        $title = "";
+            
+        foreach (explode(" ", $this->Title) as $string) {
+            $string = substr($string, 0, 1);
+            $title .= $string;
+        }
+        
+        return $title . "-" . $this->ID;
+    }
+
     public function getCMSFields()
     {
         // Get a list of available product classes
@@ -661,6 +679,16 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                 'sort' => 150
             ]
         ];
+    }
+
+    public function onAfterWrite()
+    {
+        parent::onAfterWrite();
+
+        if (empty($this->StockID) && $this->config()->auto_stock_id) {
+            $this->StockID = $this->generateStockID();
+            $this->write();
+        }
     }
 
     public function canView($member = null, $context = [])
