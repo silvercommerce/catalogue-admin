@@ -13,18 +13,19 @@ use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Assets\Storage\AssetStore;
 use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\AssetAdmin\Forms\UploadField;
+use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldPaginator;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldEditButton;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
+use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
-use SilverStripe\Forms\GridField\GridFieldSortableHeader;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
-use SilverCommerce\CatalogueAdmin\Helpers\Helper;
+use SilverStripe\Forms\GridField\GridFieldSortableHeader;
 
 /**
  * Provides additional settings required globally for this module
@@ -34,10 +35,6 @@ use SilverCommerce\CatalogueAdmin\Helpers\Helper;
  */
 class SiteConfigExtension extends DataExtension
 {
-    
-    private static $db = [
-        "ShowPriceAndTax" => "Boolean"
-    ];
 
     private static $has_one = [
         'DefaultProductImage'    => Image::class
@@ -47,18 +44,17 @@ class SiteConfigExtension extends DataExtension
     {   
         // Add config sets
         $fields->addFieldsToTab(
-            'Root.Catalogue',
-            [
-                UploadField::create(
-                    'DefaultProductImage',
-                    _t("Catalogue.DefaultProductImage", 'Default product image')
-                ),
-                CheckboxField::create("ShowPriceAndTax")
-                    ->setDescription(_t(
-                        "Catalogue.ShowPriceAndTaxDescription",
-                        "Show product prices including tax"
-                    )),
-            ]
+            'Root.Shop',
+            ToggleCompositeField::create(
+                'CatalogueSettings',
+                _t("SilverCommerce\CatalogueAdmin.CatalogueSettings", "Catalogue Settings"),
+                [
+                    UploadField::create(
+                        'DefaultProductImage',
+                        _t("SilverCommerce\CatalogueAdmin.DefaultProductImage", 'Default product image')
+                    )
+                ]
+            )
         );
     }
 
