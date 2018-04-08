@@ -200,19 +200,24 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getTaxFromCategory()
     {
-        $cat = $this->TaxCategory();
+        $category = $this->TaxCategory();
+        $tax = null;
 
-        if (!$cat->exists() || !$cat->Rates()->exists()) {
+        if (!$category->exists() || !$category->Rates()->exists()) {
             $config = SiteConfig::current_site_config();
-            $cat = $config
+            $category = $config
                 ->TaxCategories()
                 ->sort("Default", "DESC")
                 ->first();
         }
 
-        if ($cat->exists() && $cat->Rates()->exists()) {
-            return $cat->Rates()->first();
+        if ($category->exists() && $category->Rates()->exists()) {
+            $tax = $category->ValidTax();
         }
+
+        $this->extend("updateTaxFromCategory", $category, $tax);
+
+        return $tax;
     }
     
     /**
@@ -245,7 +250,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     {
         $tax = ($this->BasePrice / 100) * $this->TaxRate;
         $this->extend("updateTaxAmount", $tax);
-        
+
         return $tax;
     }
     
@@ -258,7 +263,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     {
         $price = $this->Price + $this->TaxAmount;
         $this->extend("updatePriceAndTax", $price);
-        
+
         return $price;
     }
     
@@ -271,24 +276,29 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getTaxString()
     {
-        $return = "";
+        $string = "";
         $rate = $this->getTaxFromCategory();
+        $config = SiteConfig::current_site_config();
 
-        if ($rate && $this->IncludesTax) {
-            $return = _t(
-                "CatalogueFrontend.TaxIncludes",
-                "inc. {title}",
-                ["title" => $rate->Title]
-            );
-        } elseif ($rate && !$this->IncludesTax) {
-            $return = _t(
-                "CatalogueFrontend.TaxExcludes",
-                "ex. {title}",
-                ["title" => $rate->Title]
-            );
+        if ($config->ShowPriceTaxString) {
+            if ($rate && $this->IncludesTax) {
+                $string = _t(
+                    "CatalogueFrontend.TaxIncludes",
+                    "inc. {title}",
+                    ["title" => $rate->Title]
+                );
+            } elseif ($rate && !$this->IncludesTax) {
+                $string = _t(
+                    "CatalogueFrontend.TaxExcludes",
+                    "ex. {title}",
+                    ["title" => $rate->Title]
+                );
+            }
         }
 
-        return $return;
+        $this->extend("updateTaxString", $string);
+
+        return $string;
     }
 
     /**
@@ -558,12 +568,12 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                     ),
                     TreeMultiSelectField::create(
                         "Categories",
-                        null,
+                        $this->fieldLabel("Categories"),
                         CatalogueCategory::class
                     ),
                     TagField::create(
                         'Tags',
-                        _t(__CLASS__ . '.Tags', 'Tags'),
+                        $this->fieldLabel("Tags"),
                         ProductTag::get(),
                         $this->Tags()
                     )->setCanCreate($this->canCreateTags())
