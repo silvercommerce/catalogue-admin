@@ -705,9 +705,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         }
     }
 
-    public function canView($member = null, $context = [])
+    public function canView($member = null)
     {
-        return true;
+        // Is the site locked down via siteconfig?
+        return SiteConfig::current_site_config()->canViewPages($member);
     }
 
     public function canCreate($member = null, $context = [])
@@ -726,7 +727,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         );
     }
 
-    public function canEdit($member = null, $context = [])
+    public function canEdit($member = null)
     {
         if ($member instanceof Member) {
             $memberID = $member->ID;

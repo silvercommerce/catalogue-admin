@@ -485,7 +485,8 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     public function canView($member = null, $context = [])
     {
-        return true;
+        // Is the site locked down via siteconfig?
+        return SiteConfig::current_site_config()->canViewPages($member);
     }
 
     public function canCreate($member = null, $context = [])
