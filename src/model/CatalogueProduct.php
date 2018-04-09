@@ -85,7 +85,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "BasePrice"         => "Currency",
         "Content"           => "HTMLText",
         "ContentSummary"    => "Text",
-        "Weight"            => "Float",
+        "Weight"            => "Decimal",
         "Disabled"          => "Boolean"
     ];
     
