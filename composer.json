@@ -28,11 +28,12 @@
     "require": {
         "silverstripe/framework": "~4.0",
         "silverstripe/siteconfig": "~4.0",
-        "silverstripe/asset-admin": "^1.0",
-        "colymba/gridfield-bulk-editing-tools": "3.*@dev",
-        "symbiote/silverstripe-gridfieldextensions": "^3.1",
-        "silvercommerce/tax-admin": "^1.0",
-        "silvercommerce/settings": "^1.0"
+        "silverstripe/asset-admin": "~1.0",
+        "colymba/gridfield-bulk-editing-tools": "~3.0",
+        "symbiote/silverstripe-gridfieldextensions": "~3.1",
+        "silvercommerce/tax-admin": "~1.0",
+        "silvercommerce/settings": "~1.0",
+        "bummzack/sortablefile": "~2.0"
     },
     "extra": {
         "expose": [

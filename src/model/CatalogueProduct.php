@@ -6,41 +6,42 @@ use Product;
 use Catagory;
 use SilverStripe\ORM\DB;
 use SilverStripe\Forms\Tab;
-use SilverStripe\Core\Convert;
 use SilverStripe\Assets\Image;
+use SilverStripe\Core\Convert;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\SSViewer;
-use SilverStripe\View\ArrayData;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Core\ClassInfo;
-use SilverStripe\Forms\TextField;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\View\ArrayData;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\TextField;
 use SilverStripe\Security\Member;
 use SilverStripe\Control\Director;
-use SilverStripe\TagField\TagField;
 use SilverStripe\Security\Security;
-use SilverStripe\Forms\NumericField;
+use SilverStripe\TagField\TagField;
 use Colymba\BulkUpload\BulkUploader;
 use SilverStripe\Control\Controller;
-use SilverStripe\Forms\TextareaField;
-use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\CurrencyField;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\TextareaField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Forms\GridField\GridField;
+use SilverCommerce\CatalogueAdmin\Catalogue;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\Forms\TreeMultiselectField;
-use SilverCommerce\CatalogueAdmin\Catalogue;
 use SilverStripe\Security\PermissionProvider;
-use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverCommerce\TaxAdmin\Model\TaxCategory;
+use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverCommerce\TaxAdmin\Helpers\MathsHelper;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
+use Bummzack\SortableFile\Forms\SortableUploadField;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
@@ -106,6 +107,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
     private static $belongs_many_many = [
         "Categories"    => CatalogueCategory::class
+    ];
+
+    private static $owns = [
+        "Images"
     ];
 
     private static $casting = [
@@ -617,11 +622,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         if ($this->ID) {
             $fields->addFieldToTab(
                 'Root.Images',
-                UploadField::create(
+                SortableUploadField::create(
                     'Images',
-                    $this->fieldLabel('Images'),
-                    $this->Images()
-                )
+                    $this->fieldLabel('Images')
+                )->setSortColumn('SortOrder')
             );
 
             $fields->addFieldToTab(
