@@ -452,14 +452,13 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function SortedImages()
     {
-        $config = SiteConfig::current_site_config();
-        $default_image = $config->DefaultProductImage();
-
         // If this product has images, display them
         if ($this->Images()->exists()) {
             return $this->Images()->Sort('SortOrder');
         }
 
+        $config = SiteConfig::current_site_config();
+        $default_image = $config->DefaultProductImage();
         $images = ArrayList::create();
         
         // Try to use default from SiteConfig, if none is available,
