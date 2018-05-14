@@ -317,7 +317,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                 ->filter(
                     "Products.ID",
                     $products->column("ID")
-                );
+                )->Sort('Sort', 'ASC');
         }
     }
 

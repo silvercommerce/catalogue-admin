@@ -21,7 +21,8 @@ class ProductTag extends DataObject implements PermissionProvider
 
     private static $db = [
         'Title'      => 'Varchar(255)',
-        'URLSegment' => 'Varchar(255)'
+        'URLSegment' => 'Varchar(255)',
+        'Sort' => 'Int'
     ];
 
     /**

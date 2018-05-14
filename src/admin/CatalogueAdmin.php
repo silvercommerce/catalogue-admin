@@ -8,6 +8,7 @@ use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use \Product;
 use \Category;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
+use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
@@ -115,6 +116,11 @@ class CatalogueAdmin extends ModelAdmin
                 $this->config()->category_page_length,
                 "Sort"
             ));
+        }
+
+        if ($this->modelClass == ProductTag::class && $grid) {
+            $config = $grid->getConfig();
+            $config->addComponent(GridFieldOrderableRows::create());
         }
 
         $this->extend("updateEditForm", $form);
