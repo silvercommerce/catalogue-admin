@@ -52,6 +52,14 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      */
     private static $description = "A basic product category";
 
+    /**
+     * What character shall we use to seperate hierachy elements
+     * when rendering a categories hierarchy?
+     * 
+     * @var string
+     */
+    private static $hierarchy_seperator = "/";
+
     private static $db = [
         "Title"             => "Varchar",
         "Content"           => "HTMLText",
@@ -82,7 +90,9 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     private static $casting = [
         "MenuTitle"     => "Varchar",
-        "AllProducts"   => "ArrayList"
+        "AllProducts"   => "ArrayList",
+        "Hierarchy"     => "Varchar(255)",
+        "FullHierarchy" => "Varchar(255)"
     ];
 
     private static $default_sort = [
@@ -184,6 +194,76 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     public function getMenuTitle()
     {
         return $this->Title;
+    }
+
+    /**
+     * Get the full hierarchy of the current category (including the
+     * currnt department title in the string).
+     *
+     * @return string
+     */
+    public function getFullHierarchy()
+    {
+        $sep = $this->config()->hierarchy_seperator;
+
+        return ($this->ParentID) ? $this->getBreadcrumbs($sep) : $this->Title;
+    }
+
+    /**
+     * Get the hierarchy of the current category (with the current
+     * department removed from the list).
+     *
+     * @return string
+     */
+    public function getHierarchy()
+    {
+        $sep = $this->config()->hierarchy_seperator;
+
+        if ($this->ParentID) {
+            $length = strlen("/" . $this->Title);
+            $crumbs = $this->getBreadcrumbs($sep);
+            return substr($this->getBreadcrumbs($sep), 0, strlen($crumbs) - $length);
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Find a category based on the provided hierarchy:
+     *
+     * Eg: Department/Sub Department/Sub Sub Department
+     *
+     * @param string $hierarchy A list of departments and sub departments, seperated by a forward slash
+     * 
+     * @return CatalogueCategory | null
+     */
+    public static function getFromHierarchy($hierarchy)
+    {
+        $sep = $this->config()->hierarchy_seperator;
+        $items = explode($sep, $hierarchy);
+
+        // loop though each item and get the relevent child
+        $top_item = CatalogueCategory::get()
+            ->filter("Title", $items[0])
+            ->first();
+        $next_item = null;
+
+        for ($x = 1; $x < count($items); $x++) {
+            if ($top_item) {
+                $next_item = $top_item
+                    ->Children()
+                    ->filter("Title", $items[$x])
+                    ->first();
+
+                if ($next_item) {
+                    $top_item = $next_item;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return $top_item;
     }
 
     /**

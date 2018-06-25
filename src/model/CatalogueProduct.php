@@ -519,7 +519,12 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getCategoriesList()
     {
-        $list = $this->Categories()->column("Title");
+        $list = [];
+        
+        foreach($this->Categories() as $cat) {
+            $list[] = $cat->FullHierarchy;
+        }
+
         return implode(", ", $list);
     }
 

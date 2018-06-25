@@ -73,7 +73,7 @@ class ProductCSVBulkLoader extends CsvBulkLoader
                         $cat_name = trim($cat_name);
 
                         if (!empty($cat_name)) {
-                            $cat = CatalogueCategory::get()->find("Title", $cat_name);
+                            $cat = CatalogueCategory::getFromHierarchy($cat_name);
 
                             if (empty($cat)) {
                                 $cat = CatalogueCategory::create();
