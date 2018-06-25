@@ -50,6 +50,45 @@ class ProductCSVBulkLoader extends CsvBulkLoader
         parent::__construct($objectClass);
     }
 
+    /**
+     * Generate the selected relation from the provided array of values
+     * 
+     * @param string $object   The current object being imported
+     * @param string $relation The name of the relation (eg Images)
+     * @param array  $list     The list of values
+     * @param string $class    The source class of the relation (eg SilverStripe\Assets\Image)
+     * @param string $column   The name of the column to search for existing records
+     * @param string $create   Create a new object if none found
+     * 
+     * @return void
+     */
+    protected function createRelationFromList(
+        $object,
+        $relation,
+        $list,
+        $class,
+        $column,
+        $create = false
+    ) {
+        $object->$relation()->removeAll();
+
+        foreach ($list as $name) {
+            $name = trim($name);
+
+            if (!empty($name)) {
+                $obj = $class::get()->find($column, $name);
+
+                if (empty($obj) && $create) {
+                    $obj = $class::create();
+                    $obj->$column = $name;
+                    $obj->write();
+                }
+
+                $object->$relation()->add($obj);
+            }
+        }
+    } 
+
     public function processRecord($record, $columnMap, &$results, $preview = false)
     {
 
@@ -88,46 +127,36 @@ class ProductCSVBulkLoader extends CsvBulkLoader
 
                 // Find and add any tags imported
                 if ($key == 'Tags' && !empty($value)) {
-                    $object->Tags()->removeAll();
-                    $tags = explode(",", $value);
-
-                    foreach ($tags as $tag_name) {
-                        $tag_name = trim($tag_name);
-
-                        if (!empty($tag_name)) {
-                            $tag = ProductTag::get()->find("Title", $tag_name);
-
-                            if (empty($tag)) {
-                                $tag = ProductTag::create();
-                                $tag->Title = $tag_name;
-                                $tag->write();
-                            }
-
-                            $object->Tags()->add($tag);
-                        }
-                    }
+                    $this->createRelationFromList(
+                        $object,
+                        'Tags',
+                        explode(",", $value),
+                        ProductTag::class,
+                        'Title',
+                        true
+                    );
                 }
-                
-                // Find any Images (denoted by a 'ImageXX' column)
-                if (strpos($key, 'Image') !== false && $key != "Images") {
-                    $image = Image::get()
-                        ->filter("Name", $value)
-                        ->first();
 
-                    if ($image) {
-                        $object->Images()->add($image);
-                    }
+                // Find and add any images to be imported
+                if ($key == 'Images' && !empty($value)) {
+                    $this->createRelationFromList(
+                        $object,
+                        'Images',
+                        explode(",", $value),
+                        Image::class,
+                        'Name'
+                    );
                 }
-                
-                // Find any related products (denoted by a 'RelatedXX' column)
-                if (strpos($key, 'Related') !== false && $key != "RelatedProducts") {
-                    $product = CatalogueProduct::get()
-                        ->filter("StockID", $value)
-                        ->first();
 
-                    if ($product) {
-                        $object->RelatedProducts()->add($product);
-                    }
+                // Find and add any related products to be imported
+                if ($key == 'RelatedProducts' && !empty($value)) {
+                    $this->createRelationFromList(
+                        $object,
+                        'RelatedProducts',
+                        explode(",", $value),
+                        CatalogueProduct::class,
+                        'StockID'
+                    );
                 }
             }
 

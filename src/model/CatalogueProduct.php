@@ -114,41 +114,45 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     ];
 
     private static $casting = [
-        "MenuTitle"         => "Varchar",
-        "CategoriesList"    => "Varchar",
-        "TagsList"          => "Varchar",
-        "CMSThumbnail"      => "Varchar",
-        "Price"             => "Currency",
-        "TaxRate"           => "Decimal",
-        "TaxAmount"         => "Currency",
-        "PriceAndTax"       => "Currency",
-        "TaxString"         => "Varchar",
-        "IncludesTax"       => "Boolean"
+        "MenuTitle"             => "Varchar",
+        "CategoriesList"        => "Varchar",
+        "TagsList"              => "Varchar",
+        "ImagesList"            => "Varchar",
+        "RelatedProductsList"   => "Varchar",
+        "CMSThumbnail"          => "Varchar",
+        "Price"                 => "Currency",
+        "TaxRate"               => "Decimal",
+        "TaxAmount"             => "Currency",
+        "PriceAndTax"           => "Currency",
+        "TaxString"             => "Varchar",
+        "IncludesTax"           => "Boolean"
     ];
 
     private static $summary_fields = [
-        "CMSThumbnail"  => "Thumbnail",
-        "ClassName"     => "Product",
-        "StockID"       => "StockID",
-        "Title"         => "Title",
-        "BasePrice"     => "Price",
-        "TaxRate"       => "Tax Percent",
-        "CategoriesList"=> "Categories",
-        "TagsList"      => "Tags",
-        "Disabled"      => "Disabled"
+        "CMSThumbnail"          => "Thumbnail",
+        "ClassName"             => "Product",
+        "StockID"               => "StockID",
+        "Title"                 => "Title",
+        "BasePrice"             => "Price",
+        "TaxRate"               => "Tax Percent",
+        "CategoriesList"        => "Categories",
+        "TagsList"              => "Tags",
+        "Disabled"              => "Disabled"
     ];
 
     private static $export_fields = [
-        "ID"            => "ID",
-        "StockID"       => "Stock ID",
-        "ClassName"     => "Product",
-        "Title"         => "Title",
-        "Content"       => "Content",
-        "BasePrice"     => "Price",
-        "TaxRate.Amount"=> "Tax Percent",
-        "CategoriesList"=> "Categories",
-        "TagsList"      => "Tags",
-        "Disabled"      => "Disabled"
+        "ID"                    => "ID",
+        "StockID"               => "Stock ID",
+        "ClassName"             => "Product",
+        "Title"                 => "Title",
+        "Content"               => "Content",
+        "BasePrice"             => "Price",
+        "TaxRate.Amount"        => "Tax Percent",
+        "CategoriesList"        => "Categories",
+        "TagsList"              => "Tags",
+        "ImagesList"            => "Images",
+        "RelatedProductsList"   => "RelatedProducts",
+        "Disabled"              => "Disabled"
     ];
 
     private static $searchable_fields = [
@@ -550,6 +554,30 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     public function getTagsList()
     {
         $list = $this->Tags()->column("Title");
+        return implode(", ", $list);
+    }
+
+    /**
+     * Generate a comma seperated list of image names
+     * assigned to this product.
+     * 
+     * @return string
+     */
+    public function getImagesList()
+    {
+        $list = $this->Images()->column("Name");
+        return implode(", ", $list);
+    }
+
+    /**
+     * Generate a comma seperated list of related product
+     * stock IDs for this product.
+     * 
+     * @return string
+     */
+    public function getRelatedProductsList()
+    {
+        $list = $this->RelatedProducts()->column("StockID");
         return implode(", ", $list);
     }
 
