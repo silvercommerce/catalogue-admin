@@ -2,11 +2,14 @@
 
 namespace SilverCommerce\CatalogueAdmin\Import;
 
+use SilverStripe\Assets\Image;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\CsvBulkLoader;
-use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
-use SilverCommerce\TaxAdmin\Model\TaxRate;
 use SilverStripe\SiteConfig\SiteConfig;
-use Product;
+use SilverCommerce\TaxAdmin\Model\TaxRate;
+use SilverCommerce\CatalogueAdmin\Model\ProductTag;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
 
 /**
  * Allow slightly more complex product imports from a CSV file
@@ -18,18 +21,21 @@ class ProductCSVBulkLoader extends CsvBulkLoader
 {
     
     public $columnMap = [
-        "Product"   => "ClassName",
-        "ClassName" => "ClassName",
-        "SKU"       => "StockID",
-        "Name"      => "Title",
-        "Price"     => "BasePrice",
-        "TaxPercent"=> '->importTaxPercent'
+        "Product"       => "ClassName",
+        "ClassName"     => "ClassName",
+        "SKU"           => "StockID",
+        "Stock ID"      => "StockID",
+        "Name"          => "Title",
+        "Price"         => "BasePrice",
+        "TaxPercent"    => '->importTaxPercent',
+        "Tax Percent"   => '->importTaxPercent'
     ];
 
     public $duplicateChecks = [
         'ID'        => 'ID',
         'SKU'       => 'StockID',
-        'StockID'   => 'StockID'
+        'StockID'   => 'StockID',
+        'Stock ID'  => 'StockID'
     ];
 
     public function __construct($objectClass = null)
@@ -49,23 +55,56 @@ class ProductCSVBulkLoader extends CsvBulkLoader
 
         // Get Current Object
         $objID = parent::processRecord($record, $columnMap, $results, $preview);
-
         $object = DataObject::get_by_id($this->objectClass, $objID);
 
         $this->extend("onBeforeProcess", $object, $record, $columnMap, $results, $preview);
         
         if ($object != null) {
+
             // Loop through all fields and setup associations
             foreach ($record as $key => $value) {
 
-                // Find any categories (denoted by a 'CategoryXX' column)
-                if (strpos($key, 'Category') !== false) {
-                    $category = CatalogueCategory::get()
-                        ->filter("Title", $value)
-                        ->first();
+                // Find and add any categories imported
+                if ($key == 'Categories' && !empty($value)) {
+                    $object->Categories()->removeAll();
+                    $categories = explode(",", $value);
 
-                    if ($category) {
-                        $object->Categories()->add($category);
+                    foreach ($categories as $cat_name) {
+                        $cat_name = trim($cat_name);
+
+                        if (!empty($cat_name)) {
+                            $cat = CatalogueCategory::get()->find("Title", $cat_name);
+
+                            if (empty($cat)) {
+                                $cat = CatalogueCategory::create();
+                                $cat->Title = $cat_name;
+                                $cat->write();
+                            }
+
+                            $object->Categories()->add($cat);
+                        }
+                    }
+                }
+
+                // Find and add any tags imported
+                if ($key == 'Tags' && !empty($value)) {
+                    $object->Tags()->removeAll();
+                    $tags = explode(",", $value);
+
+                    foreach ($tags as $tag_name) {
+                        $tag_name = trim($tag_name);
+
+                        if (!empty($tag_name)) {
+                            $tag = ProductTag::get()->find("Title", $tag_name);
+
+                            if (empty($tag)) {
+                                $tag = ProductTag::create();
+                                $tag->Title = $tag_name;
+                                $tag->write();
+                            }
+
+                            $object->Tags()->add($tag);
+                        }
                     }
                 }
                 
@@ -82,7 +121,7 @@ class ProductCSVBulkLoader extends CsvBulkLoader
                 
                 // Find any related products (denoted by a 'RelatedXX' column)
                 if (strpos($key, 'Related') !== false && $key != "RelatedProducts") {
-                    $product = Product::get()
+                    $product = CatalogueProduct::get()
                         ->filter("StockID", $value)
                         ->first();
 
@@ -100,7 +139,7 @@ class ProductCSVBulkLoader extends CsvBulkLoader
 
         return $objID;
     }
-    
+
     public static function importTaxPercent(&$obj, $val, $record)
     {
         $config = SiteConfig::current_site_config();
