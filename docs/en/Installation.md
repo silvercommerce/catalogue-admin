@@ -1,28 +1,9 @@
-Installing the Cataloge module
-==============================
+# Installing the Cataloge module
 
-## Via composer
+You need to install this module via composer:
 
-The default way to do this is to use composer. If you are doing this
-you need to add:
+    # composer require silvercommerce/catalogue-admin
 
-    "i-lateral/silverstripe-catalogue":"*"
-
-To your project's composer.json.
-
-At the moment this module is still in heavy development. Once this cycle
-stabalises we will look into adding stable releases.
-
-## From source / manuallly
-
-You can download this module either direct from the Silverstripe addons
-directory or Github.
-
-If you do, then follow this process:
-
-* Download a Zip or Tarball of this module
-* Extract the module into a directory callled "catalogue" in your project
-* Run http://www.yoursite.com/dev/build?flush=all
 
 ## Add a "Product" and "Category" objects and controllers
 
@@ -35,6 +16,8 @@ For example:
     /projectroot/mysite/code/Product.php
     
     <?php
+
+    use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
     
     class Product extends CatalogueProduct {
     
@@ -47,6 +30,8 @@ For example:
     /projectroot/mysite/code/Category.php
     
     <?php
+    
+    use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
     
     class Category extends CatalogueCategory {
     
@@ -66,6 +51,8 @@ CatalogueProductController and CatalogueCategoryController, EG:
     /projectroot/mysite/code/Product_Controller.php
     
     <?php
+
+    use SilverCommerce\CatalogueFrontend\Control\CatalogueController;
     
     class Product_Controller extends CatalogueProductController {    
     
@@ -79,6 +66,8 @@ CatalogueProductController and CatalogueCategoryController, EG:
     /projectroot/mysite/code/Category_Controller.php
     
     <?php
+
+    use SilverCommerce\CatalogueFrontend\Control\CatalogueController;
     
     class Category_Controller extends CatalogueCategoryController {
         
@@ -102,7 +91,6 @@ Categories.
 ### Adding nested Categories
 
 This module supports a hierachy for categories. To add "Sub categories"
-you must click the arrow to the left of a category name. The category
-tab will reload showing you the children of this category. Once this has
-happened, you can add a new category and it will automatically be added
-as a child.
+you must select the category you would like to add children to, then when
+the category has loaded, select the "Children" tab. Now you can add child
+categories.

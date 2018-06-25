@@ -1,13 +1,19 @@
-Silverstripe Catalogue
-======================
+# SilverCommerce Catalogue Admin
 
-Provides a product and category admin for silverstripe with extendable
-templates, designed to mirror the CMS (but work independantly).
+Provides the ability to create Products and Categories in the SilverStripe
+admin area, as well as support for bulk import and export of Products,
+hierachical categories and product tagging.
 
-This module is designed to replace the current i-lateral Silverstripe
-commerce module and will only provide the product admin and templates
-part of the module (the rest will be provided via a new "Silverstripe
-Orders" module).
+**Please note**: This is only an admin interface to manage Products and Categories.
+If you want to add a frontent product catalogue to your site, you can either use
+[`silvercommerce/catalogue-frontent`](https://github.com/silvercommerce/catalogue-frontend)
+or roll your own.
+
+## Installation
+
+Install using [composer](https://getcomposer.org):
+
+    # composer require silvercommerce/catalogue-admin
 
 ## Dependancies
 
