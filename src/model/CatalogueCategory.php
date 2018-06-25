@@ -241,7 +241,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      */
     public static function getFromHierarchy($hierarchy)
     {
-        $sep = $this->config()->hierarchy_seperator;
+        $sep = self::config()->hierarchy_seperator;
         $items = explode($sep, $hierarchy);
 
         // loop though each item and get the relevent child
