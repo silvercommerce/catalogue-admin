@@ -138,6 +138,19 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "Disabled"      => "Disabled"
     ];
 
+    private static $export_fields = [
+        "ID"            => "ID",
+        "StockID"       => "Stock ID",
+        "ClassName"     => "Product",
+        "Title"         => "Title",
+        "Content"       => "Content",
+        "BasePrice"     => "Price",
+        "TaxRate.Amount"=> "Tax Percent",
+        "CategoriesList"=> "Categories",
+        "TagsList"      => "Tags",
+        "Disabled"      => "Disabled"
+    ];
+
     private static $searchable_fields = [
         "Title",
         "Content",

@@ -5,11 +5,14 @@ namespace SilverCommerce\CatalogueAdmin\Admin;
 use \Product;
 use \Category;
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Core\Config\Config;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
+use SilverStripe\Forms\GridField\GridFieldExportButton;
 use SilverStripe\Forms\GridField\GridFieldImportButton;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
+use SilverStripe\Forms\GridField\GridFieldPrintButton;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
@@ -52,30 +55,29 @@ class CatalogueAdmin extends ModelAdmin
         Product::class => ProductCSVBulkLoader::class
     ];
 
-    public function init()
-    {
-        parent::init();
-    }
-    
+    /**
+     * Get the default export fields for the current model.
+     * 
+     * First this checks if the `export_fields` config variable is set on
+     * the model class, if not, it reverts to the default behaviour.
+     * 
+     * @return array
+     */
     public function getExportFields()
     {
-        $fields = [
-            "Title" => "Title",
-            "URLSegment" => "URLSegment"
-        ];
-        
-        if ($this->modelClass == Product::class) {
-            $fields["StockID"] = "StockID";
-            $fields["ClassName"] = "Type";
-            $fields["BasePrice"] = "Price";
-            $fields["TaxRate.Amount"] = "TaxPercent";
-            $fields["Images.first.Name"] = "Image1";
-            $fields["Categories.first.Title"] = "Category1";
-            $fields["Content"] = "Content";
+        $export_fields = Config::inst()->get(
+            $this->modelClass,
+            "export_fields"
+        );
+
+        if (isset($export_fields) && is_array($export_fields)) {
+            $fields = $export_fields;
+        } else {
+            $fields = parent::getExportFields();
         }
-        
+
         $this->extend("updateExportFields", $fields);
-        
+
         return $fields;
     }
 
@@ -101,6 +103,9 @@ class CatalogueAdmin extends ModelAdmin
         $grid = $fields
             ->fieldByName($this->sanitiseClassName($this->modelClass));
 
+        $export_button = new GridFieldExportButton('buttons-before-right');
+        $export_button->setExportColumns($this->getExportFields());
+
         if ($this->showImportForm) {
             $import_button = GridFieldImportButton::create('buttons-before-right')
                 ->setImportForm($this->ImportForm())
@@ -117,10 +122,6 @@ class CatalogueAdmin extends ModelAdmin
                 $this->modelClass,
                 $this->config()->product_page_length
             ));
-
-            if ($import_button) {
-                $grid->getConfig()->addComponent($import_button);
-            }
         }
         
         if ($this->modelClass == Category::class && $grid) {
@@ -129,15 +130,25 @@ class CatalogueAdmin extends ModelAdmin
                 $this->config()->category_page_length,
                 "Sort"
             ));
-
-            if ($import_button) {
-                $grid->getConfig()->addComponent($import_button);
-            }
         }
 
         if ($this->modelClass == ProductTag::class && $grid) {
-            $config = $grid->getConfig();
-            $config->addComponent(GridFieldOrderableRows::create());
+            $grid
+                ->getConfig()
+                ->removeComponentsByType(GridFieldImportButton::class)
+                ->removeComponentsByType(GridFieldPrintButton::class)
+                ->addComponent(GridFieldOrderableRows::create());
+        }
+
+        $config = $grid->getConfig();
+
+        $config
+            ->removeComponentsByType(GridFieldExportButton::class)
+            ->addComponents(new GridFieldPrintButton('buttons-before-right'))
+            ->addComponent($export_button);
+
+        if ($import_button) {
+            $config->addComponent($import_button);
         }
 
         $this->extend("updateEditForm", $form);
