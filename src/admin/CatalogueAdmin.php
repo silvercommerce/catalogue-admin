@@ -2,13 +2,14 @@
 
 namespace SilverCommerce\CatalogueAdmin\Admin;
 
-use SilverStripe\Admin\ModelAdmin;
-use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
-use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use \Product;
 use \Category;
+use SilverStripe\Admin\ModelAdmin;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
+use SilverStripe\Forms\GridField\GridFieldImportButton;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
+use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
@@ -48,11 +49,7 @@ class CatalogueAdmin extends ModelAdmin
     ];
 
     private static $model_importers = [
-        Product::class => ProductCSVBulkLoader::class,
-    ];
-
-    public $showImportForm = [
-        Product::class
+        Product::class => ProductCSVBulkLoader::class
     ];
 
     public function init()
@@ -100,14 +97,30 @@ class CatalogueAdmin extends ModelAdmin
     {
         $form = parent::getEditForm($id, $fields);
         $fields = $form->Fields();
+        $import_button = null;
         $grid = $fields
             ->fieldByName($this->sanitiseClassName($this->modelClass));
+
+        if ($this->showImportForm) {
+            $import_button = GridFieldImportButton::create('buttons-before-right')
+                ->setImportForm($this->ImportForm())
+                ->setModalTitle(
+                    _t(
+                        'SilverStripe\\Admin\\ModelAdmin.IMPORT',
+                        'Import from CSV'
+                    )
+                );
+        }
 
         if ($this->modelClass == Product::class && $grid) {
             $grid->setConfig(GridFieldConfig_Catalogue::create(
                 $this->modelClass,
                 $this->config()->product_page_length
             ));
+
+            if ($import_button) {
+                $grid->getConfig()->addComponent($import_button);
+            }
         }
         
         if ($this->modelClass == Category::class && $grid) {
@@ -116,6 +129,10 @@ class CatalogueAdmin extends ModelAdmin
                 $this->config()->category_page_length,
                 "Sort"
             ));
+
+            if ($import_button) {
+                $grid->getConfig()->addComponent($import_button);
+            }
         }
 
         if ($this->modelClass == ProductTag::class && $grid) {
