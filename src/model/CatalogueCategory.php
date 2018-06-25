@@ -85,6 +85,8 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     private static $summary_fields = [
         'Title'         => 'Title',
+        'Children.Count'=> 'Children',
+        'Products.Count'=> 'Products',
         'Disabled'      => 'Disabled'
     ];
 
