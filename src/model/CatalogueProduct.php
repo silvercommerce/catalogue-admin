@@ -121,6 +121,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "RelatedProductsList"   => "Varchar",
         "CMSThumbnail"          => "Varchar",
         "Price"                 => "Currency",
+        "TaxID"                 => "Int",
         "TaxRate"               => "Decimal",
         "TaxAmount"             => "Currency",
         "PriceAndTax"           => "Currency",
@@ -244,6 +245,23 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         return $tax;
     }
     
+    /**
+     * Get the ID of the relevent tax object for this product
+     *
+     * @return int
+     */
+    public function getTaxID()
+    {
+        $id = 0;
+        $tax = $this->getTaxFromCategory();
+
+        if (isset($tax) && $tax->exists()) {
+            $id = $tax->ID;
+        }
+
+        return $id;
+    }
+
     /**
      * Get the percentage amount of tax applied to this item
      *
