@@ -236,7 +236,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                 ->first();
         }
 
-        if ($category->exists() && $category->Rates()->exists()) {
+        if (isset($category) && $category->exists() && $category->Rates()->exists()) {
             $tax = $category->ValidTax();
         }
 
