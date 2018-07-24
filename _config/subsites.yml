@@ -1,9 +1,0 @@
----
-Name: catalogueadmin-subsites
-Only:
-  moduleexists: 'silverstripe/subsites'
----
-# Add postage support to an estimate/invoice (if installed)
-SilverCommerce\CatalogueAdmin\Admin\CatalogueAdmin:
-  extensions:
-    - SilverStripe\Subsites\Extensions\SubsiteMenuExtension
