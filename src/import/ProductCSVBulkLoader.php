@@ -84,7 +84,9 @@ class ProductCSVBulkLoader extends CsvBulkLoader
                     $obj->write();
                 }
 
-                $object->$relation()->add($obj);
+                if (!empty($obj)) {
+                    $object->$relation()->add($obj);
+                }
             }
         }
     } 
