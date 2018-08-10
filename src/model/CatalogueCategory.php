@@ -405,91 +405,93 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     public function getCMSFields()
     {
-        $fields = parent::getCMSFields();
-
-        // Get a list of available product classes
-        $classnames = array_values(ClassInfo::subclassesFor(Category::class));
-        $category_types = array();
-
-        foreach ($classnames as $classname) {
-            $instance = singleton($classname);
-            $category_types[$classname] = $instance->i18n_singular_name();
-        }
-
-        $fields->removeByName("Sort");
-        $fields->removeByName("Disabled");
-        $fields->removeByName("Products");
-        
-        if ($this->exists()) {
-
-            // Ensure that we set the parent ID to the current category
-            // when creating a new record 
-            $fields->addFieldToTab(
-                'Root.Children',
-                GridField::create(
-                    "Children",
-                    "",
-                    Category::get()->filter("ParentID", $this->ID)
-                )->setConfig($child_config = new GridFieldConfig_Catalogue(
-                    Category::class,
-                    null,
-                    "Sort"
-                ))
-            );
-
-            $child_edit = $child_config->getComponentByType('GridFieldDetailForm');
-
-            if ($child_edit) {
-                $self = $this; // PHP 5.3 support - $this can't be used in closures
-                $child_edit->setItemEditFormCallback(function($form, $itemRequest) use ($self) {
-                    $record = $form->getRecord();
-
-                    if (!$record->ID) {
-                        $parent_field = $form->Fields()->dataFieldByName("ParentID");
-                        $parent_field->setValue($self->ID);
-                    }
-                });
+        $this->beforeUpdateCMSFields(function ($fields) {
+            if (!$this->canEdit()) {
+                return;
             }
 
-            // Add related products
-            $fields->addFieldToTab(
-                'Root.Products',
-                GridField::create(
-                    "Products",
-                    "",
-                    $this->Products()
-                )->setConfig(new GridFieldConfig_CatalogueRelated(
-                    Product::class,
-                    null,
-                    "SortOrder"
-                ))
-            );
-        }
+            // Get a list of available product classes
+            $classnames = array_values(ClassInfo::subclassesFor(Category::class));
+            $category_types = array();
 
-        $fields->addFieldToTab(
-            "Root.Settings",
-            DropdownField::create(
-                "ClassName",
-                _t("CatalogueAdmin.CategoryType", "Type of Category"),
-                $category_types
-            )
-        );
+            foreach ($classnames as $classname) {
+                $instance = singleton($classname);
+                $category_types[$classname] = $instance->i18n_singular_name();
+            }
 
-        if ($this->exists()) {
+            $fields->removeByName("Sort");
+            $fields->removeByName("Disabled");
+            $fields->removeByName("Products");
+            
+            if ($this->exists()) {
+
+                // Ensure that we set the parent ID to the current category
+                // when creating a new record 
+                $fields->addFieldToTab(
+                    'Root.Children',
+                    GridField::create(
+                        "Children",
+                        "",
+                        Category::get()->filter("ParentID", $this->ID)
+                    )->setConfig($child_config = new GridFieldConfig_Catalogue(
+                        Category::class,
+                        null,
+                        "Sort"
+                    ))
+                );
+
+                $child_edit = $child_config->getComponentByType('GridFieldDetailForm');
+
+                if ($child_edit) {
+                    $self = $this; // PHP 5.3 support - $this can't be used in closures
+                    $child_edit->setItemEditFormCallback(function($form, $itemRequest) use ($self) {
+                        $record = $form->getRecord();
+
+                        if (!$record->ID) {
+                            $parent_field = $form->Fields()->dataFieldByName("ParentID");
+                            $parent_field->setValue($self->ID);
+                        }
+                    });
+                }
+
+                // Add related products
+                $fields->addFieldToTab(
+                    'Root.Products',
+                    GridField::create(
+                        "Products",
+                        "",
+                        $this->Products()
+                    )->setConfig(new GridFieldConfig_CatalogueRelated(
+                        Product::class,
+                        null,
+                        "SortOrder"
+                    ))
+                );
+            }
+
             $fields->addFieldToTab(
                 "Root.Settings",
-                TreeDropdownField::create(
-                    "ParentID",
-                    _t("CatalogueAdmin.ParentCategory", "Parent Category"),
-                    CatalogueCategory::class
-                )->setLabelField("Title")
-                ->setKeyField("ID")
+                DropdownField::create(
+                    "ClassName",
+                    _t("CatalogueAdmin.CategoryType", "Type of Category"),
+                    $category_types
+                )
             );
-        }
-        
-        $this->extend('updateCMSFields', $fields);
 
-        return $fields;
+            if ($this->exists()) {
+                $fields->addFieldToTab(
+                    "Root.Settings",
+                    TreeDropdownField::create(
+                        "ParentID",
+                        _t("CatalogueAdmin.ParentCategory", "Parent Category"),
+                        CatalogueCategory::class
+                    )->setLabelField("Title")
+                    ->setKeyField("ID")
+                );
+            }
+        });
+
+        return parent::getCMSFields();
     }
 
     public function onBeforeDelete()
