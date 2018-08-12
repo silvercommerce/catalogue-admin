@@ -620,7 +620,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     public function getCMSFields()
     {
         // Get a list of available product classes
-        $classnames = array_values(ClassInfo::subclassesFor("Product"));
+        $classnames = array_values(ClassInfo::subclassesFor(Product::class));
         $product_types = array();
         $config = SiteConfig::current_site_config();
 
