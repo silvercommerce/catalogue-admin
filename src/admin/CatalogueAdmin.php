@@ -13,6 +13,7 @@ use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverStripe\Forms\GridField\GridFieldPrintButton;
+use ilateral\SilverStripe\ModelAdminPlus\ModelAdminPlus;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
@@ -23,7 +24,7 @@ use SilverStripe\Forms\GridField\GridFieldPrintButton;
  * @package catalogue
  * @subpackage admin
  */
-class CatalogueAdmin extends ModelAdmin
+class CatalogueAdmin extends ModelAdminPlus
 {
     /**
      * Set the page length for products
@@ -54,32 +55,6 @@ class CatalogueAdmin extends ModelAdmin
     private static $model_importers = [
         Product::class => ProductCSVBulkLoader::class
     ];
-
-    /**
-     * Get the default export fields for the current model.
-     * 
-     * First this checks if the `export_fields` config variable is set on
-     * the model class, if not, it reverts to the default behaviour.
-     * 
-     * @return array
-     */
-    public function getExportFields()
-    {
-        $export_fields = Config::inst()->get(
-            $this->modelClass,
-            "export_fields"
-        );
-
-        if (isset($export_fields) && is_array($export_fields)) {
-            $fields = $export_fields;
-        } else {
-            $fields = parent::getExportFields();
-        }
-
-        $this->extend("updateExportFields", $fields);
-
-        return $fields;
-    }
 
     public function getList()
     {
