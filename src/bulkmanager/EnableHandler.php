@@ -2,9 +2,11 @@
 
 namespace SilverCommerce\CatalogueAdmin\BulkManager;
 
-use SilverStripe\Control\HTTPResponse;
-use SilverStripe\Control\HTTPRequest;
+use Exception;
 use SilverStripe\Core\Convert;
+use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Control\HTTPResponse;
+use Colymba\BulkTools\HTTPBulkToolsResponse;
 use Colymba\BulkManager\BulkAction\Handler as GridFieldBulkActionHandler;
 
 /**
@@ -32,12 +34,7 @@ class EnableHandler extends GridFieldBulkActionHandler
      */
     protected $label = 'Enable';
 
-    /**
-     * Front-end icon path for this handler's action.
-     * 
-     * @var string
-     */
-    protected $icon = '';
+    protected $buttonClasses = 'font-icon-tick';
 
     /**
      * Whether this handler should be called via an XHR from the front-end
@@ -61,26 +58,34 @@ class EnableHandler extends GridFieldBulkActionHandler
      */
     public function getI18nLabel()
     {
-        return _t('CatalogueAdmin.Enable', $this->getLabel());
+        return _t(__CLASS__ . '.Enable', $this->getLabel());
     }
 
     public function enable(HTTPRequest $request)
     {
-        $ids = [];
+        $response = new HTTPBulkToolsResponse(true, $this->gridField);
 
-        foreach ($this->getRecords() as $record) {
-            array_push($ids, $record->ID);
+        try {
+            $ids = [];
 
-            $record->Disabled = 0;
-            $record->write();
+            foreach ($this->getRecords() as $record) {
+                array_push($ids, $record->ID);
+                $record->Disabled = 0;
+                $record->write();
+                $response->addSuccessRecord($record);
+            }
+
+            $response->setMessage(
+                _t(
+                    __CLASS__ . ".EnabledXRecords",
+                    "Enabled {value} records",
+                    ['value' => count($ids)]
+                )
+            );
+        } catch (Exception $ex) {
+            $response->setStatusCode(500);
+            $response->setMessage($ex->getMessage());
         }
-
-        $response = new HTTPResponse(Convert::raw2json(array(
-            'done' => true,
-            'records' => $ids
-        )));
-
-        $response->addHeader('Content-Type', 'text/json');
 
         return $response;
     }
