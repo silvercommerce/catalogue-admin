@@ -207,11 +207,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getPrice()
     {
-        if ($this->IncludesTax) {
-            $price = $this->BasePrice + $this->TaxAmount;
-        } else {
-            $price = $this->BasePrice;
-        }
+        $price = $this->BasePrice;
         
         $this->extend("updatePrice", $price);
 
