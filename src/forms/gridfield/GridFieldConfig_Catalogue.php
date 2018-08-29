@@ -21,6 +21,7 @@ use Colymba\BulkManager\BulkManager as GridFieldBulkManager;
 use Colymba\BulkManager\BulkAction\UnlinkHandler;
 use SilverCommerce\CatalogueAdmin\BulkManager\DisableHandler;
 use SilverCommerce\CatalogueAdmin\BulkManager\EnableHandler;
+use Symbiote\GridFieldExtensions\GridFieldConfigurablePaginator;
 
 /**
  * Allows editing of records contained within the GridField, instead of only allowing the ability to view records in
@@ -73,7 +74,7 @@ class GridFieldConfig_Catalogue extends GridFieldConfig {
 		$this->addComponent(new GridFieldEditButton());
 		$this->addComponent(new GridFieldDeleteAction());
 		$this->addComponent(new GridFieldPageCount('toolbar-header-right'));
-		$this->addComponent($pagination = new GridFieldPaginator($itemsPerPage));
+		$this->addComponent($pagination = new GridFieldConfigurablePaginator($itemsPerPage));
 		$this->addComponent(new GridFieldExportButton("buttons-before-right"));
 
 		// Setup Bulk manager
