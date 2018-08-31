@@ -22,6 +22,7 @@ use Colymba\BulkManager\BulkAction\UnlinkHandler;
 use SilverCommerce\CatalogueAdmin\BulkManager\DisableHandler;
 use SilverCommerce\CatalogueAdmin\BulkManager\EnableHandler;
 use Symbiote\GridFieldExtensions\GridFieldConfigurablePaginator;
+use SilverStripe\Forms\GridField\GridFieldDetailForm;
 
 /**
  * Allows editing of records contained within the GridField, instead of only allowing the ability to view records in
@@ -89,16 +90,19 @@ class GridFieldConfig_Catalogue extends GridFieldConfig {
 		$add_button = new GridFieldAddNewMultiClass("buttons-before-left");
         $add_button->setClasses($this->get_subclasses($classname));
 
-		// If we are manageing a category, use the relevent field, else
+		// If we are managing a category, use the relevent field, else
 		// use product
-		if ($classname == Category::class) {
-			$this->addComponent(new CategoryDetailForm());
-			$add_button->setItemRequestClass(CategoryDetailForm_ItemRequest::class);
-		} else {
-			$this->addComponent(new EnableDisableDetailForm());
-			$add_button->setItemRequestClass(EnableDisableDetailForm_ItemRequest::class);
-		}
+		$detail_form = new GridFieldDetailForm();
 
+		if ($classname == Category::class) {
+			$detail_form
+				->setItemRequestClass(CategoryDetailForm_ItemRequest::class);
+		} else {
+			$detail_form
+				->setItemRequestClass(EnableDisableDetailForm_ItemRequest::class);
+		}
+		
+		$this->addComponent($detail_form);
 		$this->addComponent($add_button);
 
 		if ($sort_col) {

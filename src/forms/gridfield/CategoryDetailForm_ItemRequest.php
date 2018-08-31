@@ -2,10 +2,6 @@
 
 namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
-class CategoryDetailForm extends EnableDisableDetailForm
-{
-}
-
 class CategoryDetailForm_ItemRequest extends EnableDisableDetailForm_ItemRequest
 {
     private static $allowed_actions = [

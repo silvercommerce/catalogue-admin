@@ -10,21 +10,10 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Forms\FormAction;
 
 /**
- * Base class for editing a catlogue object.
- * 
- * Currently allows enabling or disabling of an object via additional buttons
- * added to the gridfield.
- * 
- * NOTE: The object being edited must implement a "Disabled" parameter
- * on it's DB fields.
+ * Custom detailform for items that can vbe enabled and disabled
  *
  * @author ilateral
  */
-
-class EnableDisableDetailForm extends GridFieldDetailForm
-{
-}
-
 class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
 {
 
@@ -51,7 +40,8 @@ class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemReques
                         'doDisable',
                         _t('Catalogue.Disable', 'Disable')
                     )->setUseButtonTag(true)
-                    ->addExtraClass('ss-ui-action-destructive'),
+                    ->addExtraClass('btn btn-outline-danger btn-hide-outline')
+                    ->addExtraClass('action font-icon-cancel-circled'),
                     "action_doDelete"
                 );
             } elseif ($this->record->isDisabled()) {
@@ -59,7 +49,9 @@ class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemReques
                     FormAction::create(
                         'doEnable',
                         _t('Catalogue.Enable', 'Enable')
-                    )->setUseButtonTag(true),
+                    )->setUseButtonTag(true)
+                    ->addExtraClass('btn btn-outline-primary btn-hide-outline')
+                    ->addExtraClass('action font-icon-check-mark-circle'),
                     "action_doDelete"
                 );
             }
