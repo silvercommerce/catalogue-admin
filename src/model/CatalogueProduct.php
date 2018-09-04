@@ -286,7 +286,11 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      */
     public function getTaxAmount($decimal_size = null)
     {
-        $tax = ($this->BasePrice / 100) * $this->TaxRate;
+        // Round using default rounding defined on MathsHelper
+        $tax = MathsHelper::round(
+            ($this->BasePrice / 100) * $this->TaxRate,
+            2
+        );
         $this->extend("updateTaxAmount", $tax);
 
         return $tax;

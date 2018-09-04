@@ -11,3 +11,7 @@
 ## 1.0.2
 
 * Re-enable disable/enable buttons on Products / Categories 
+
+## 1.0.3
+
+* Use `TaxAdmin::MathsHelper()` to calculate product tax
