@@ -15,3 +15,7 @@
 ## 1.0.3
 
 * Use `TaxAdmin::MathsHelper()` to calculate product tax
+
+## 1.0.4
+
+* Fix tax rate export column

@@ -148,7 +148,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "Title"                 => "Title",
         "Content"               => "Content",
         "BasePrice"             => "Price",
-        "TaxRate.Amount"        => "Tax Percent",
+        "TaxRate"               => "Tax Percent",
         "CategoriesList"        => "Categories",
         "TagsList"              => "Tags",
         "ImagesList"            => "Images",
