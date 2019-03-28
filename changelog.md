@@ -19,3 +19,7 @@
 ## 1.0.4
 
 * Fix tax rate export column
+
+## 1.0.5
+
+* Improved adding of import button

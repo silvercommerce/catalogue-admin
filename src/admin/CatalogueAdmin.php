@@ -75,6 +75,7 @@ class CatalogueAdmin extends ModelAdminPlus
         $form = parent::getEditForm($id, $fields);
         $fields = $form->Fields();
         $import_button = null;
+        $add_import = false;
         $grid = $fields
             ->fieldByName($this->sanitiseClassName($this->modelClass));
 
@@ -97,6 +98,7 @@ class CatalogueAdmin extends ModelAdminPlus
                 $this->modelClass,
                 $this->config()->product_page_length
             ));
+            $add_import = true;
         }
         
         if ($this->modelClass == Category::class && $grid) {
@@ -105,12 +107,12 @@ class CatalogueAdmin extends ModelAdminPlus
                 $this->config()->category_page_length,
                 "Sort"
             ));
+            $add_import = true;
         }
 
         if ($this->modelClass == ProductTag::class && $grid) {
             $grid
                 ->getConfig()
-                ->removeComponentsByType(GridFieldImportButton::class)
                 ->removeComponentsByType(GridFieldPrintButton::class)
                 ->addComponent(GridFieldOrderableRows::create());
         }
@@ -122,7 +124,7 @@ class CatalogueAdmin extends ModelAdminPlus
             ->addComponents(new GridFieldPrintButton('buttons-before-right'))
             ->addComponent($export_button);
 
-        if ($import_button) {
+        if ($add_import && $import_button) {
             $config->addComponent($import_button);
         }
 
