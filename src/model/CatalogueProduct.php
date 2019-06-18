@@ -3,48 +3,27 @@
 namespace SilverCommerce\CatalogueAdmin\Model;
 
 use Product;
-use Catagory;
 use SilverStripe\ORM\DB;
-use SilverStripe\Forms\Tab;
 use SilverStripe\Assets\Image;
-use SilverStripe\Core\Convert;
-use SilverStripe\Forms\TabSet;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\SSViewer;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\View\ArrayData;
-use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\TextField;
 use SilverStripe\Security\Member;
 use SilverStripe\Control\Director;
 use SilverStripe\Security\Security;
 use SilverStripe\TagField\TagField;
-use Colymba\BulkUpload\BulkUploader;
 use SilverStripe\Control\Controller;
-use SilverStripe\Forms\NumericField;
-use SilverStripe\Forms\CurrencyField;
 use SilverStripe\Forms\DropdownField;
-use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Forms\TextareaField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\SiteConfig\SiteConfig;
-use SilverStripe\Forms\TreeDropdownField;
-use SilverStripe\Forms\GridField\GridField;
-use SilverCommerce\CatalogueAdmin\Catalogue;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\Forms\TreeMultiselectField;
 use SilverStripe\Security\PermissionProvider;
-use SilverCommerce\TaxAdmin\Model\TaxCategory;
-use SilverStripe\AssetAdmin\Forms\UploadField;
-use SilverCommerce\TaxAdmin\Helpers\MathsHelper;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
-use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use Bummzack\SortableFile\Forms\SortableUploadField;
-use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
-use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
-use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
 
 /**
@@ -83,15 +62,11 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     private static $db = [
         "Title"             => "Varchar(255)",
         "StockID"           => "Varchar",
-        "BasePrice"         => "Currency",
+        "Price"             => "TaxableCurrency",
         "Content"           => "HTMLText",
         "ContentSummary"    => "Text",
         "Weight"            => "Decimal",
         "Disabled"          => "Boolean"
-    ];
-    
-    private static $has_one = [
-        "TaxCategory"       => TaxCategory::class
     ];
 
     private static $many_many = [
@@ -184,163 +159,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     public function isDisabled()
     {
         return $this->Disabled;
-    }
-    
-    /**
-     * Method that allows us to define in templates if we should show
-     * price including tax, or excluding tax
-     * 
-     * @return boolean
-     */
-    public function getIncludesTax()
-    {
-        $config = SiteConfig::current_site_config();
-        return $config->ShowPriceAndTax;
-    }
-    
-    /**
-     * Get a final price for this product. We make this a method so that
-     * we can tap into extensions and allow third party modules to alter
-     * this (to add items such as tax, bulk pricing, etc).
-     *
-     * @return Float
-     */
-    public function getPrice()
-    {
-        $price = $this->BasePrice;
-        
-        $this->extend("updatePrice", $price);
-
-        return $price;
-    }
-
-    /**
-     * Get the tax rate from the current category (or default) 
-     *
-     * @return TaxRate | null
-     */
-    public function getTaxFromCategory()
-    {
-        $category = $this->TaxCategory();
-        $tax = null;
-
-        if (!$category->exists() || !$category->Rates()->exists()) {
-            $config = SiteConfig::current_site_config();
-            $category = $config
-                ->TaxCategories()
-                ->sort("Default", "DESC")
-                ->first();
-        }
-
-        if (isset($category) && $category->exists() && $category->Rates()->exists()) {
-            $tax = $category->ValidTax();
-        }
-
-        $this->extend("updateTaxFromCategory", $category, $tax);
-
-        return $tax;
-    }
-    
-    /**
-     * Get the ID of the relevent tax object for this product
-     *
-     * @return int
-     */
-    public function getTaxID()
-    {
-        $id = 0;
-        $tax = $this->getTaxFromCategory();
-
-        if (isset($tax) && $tax->exists()) {
-            $id = $tax->ID;
-        }
-
-        return $id;
-    }
-
-    /**
-     * Get the percentage amount of tax applied to this item
-     *
-     * @return Decimal
-     */
-    public function getTaxRate()
-    {
-        $rate = 0;
-        $obj = $this->getTaxFromCategory();
-
-        if ($obj) {
-            $rate = $obj->Rate;
-        }
-
-        $this->extend("updateTaxRate", $rate);
-
-        return $rate;
-    }
-
-    /**
-     * Get a final tax amount for this product. You can extend this
-     * method using "UpdateTax" allowing third party modules to alter
-     * tax amounts dynamically.
-     * 
-     * @return Float
-     */
-    public function getTaxAmount($decimal_size = null)
-    {
-        // Round using default rounding defined on MathsHelper
-        $tax = MathsHelper::round(
-            ($this->BasePrice / 100) * $this->TaxRate,
-            2
-        );
-        $this->extend("updateTaxAmount", $tax);
-
-        return $tax;
-    }
-    
-    /**
-     * Get the final price of this product, including tax (if any)
-     *
-     * @return Float
-     */
-    public function getPriceAndTax()
-    {
-        $price = $this->Price + $this->TaxAmount;
-        $this->extend("updatePriceAndTax", $price);
-
-        return $price;
-    }
-    
-    /**
-     * Generate a string to go with the the product price. We can
-     * overwrite the wording of this by using Silverstripes language
-     * files
-     *
-     * @return String
-     */
-    public function getTaxString()
-    {
-        $string = "";
-        $rate = $this->getTaxFromCategory();
-        $config = SiteConfig::current_site_config();
-
-        if ($config->ShowPriceTaxString) {
-            if ($rate && $this->IncludesTax) {
-                $string = _t(
-                    "CatalogueFrontend.TaxIncludes",
-                    "inc. {title}",
-                    ["title" => $rate->Title]
-                );
-            } elseif ($rate && !$this->IncludesTax) {
-                $string = _t(
-                    "CatalogueFrontend.TaxExcludes",
-                    "ex. {title}",
-                    ["title" => $rate->Title]
-                );
-            }
-        }
-
-        $this->extend("updateTaxString", $string);
-
-        return $string;
     }
 
     /**
@@ -623,12 +441,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         $classnames = array_values(ClassInfo::subclassesFor(Product::class));
         $product_types = array();
         $config = SiteConfig::current_site_config();
-
         foreach ($classnames as $classname) {
             $instance = singleton($classname);
             $product_types[$classname] = $instance->i18n_singular_name();
         }
-
         $fields = FieldList::create(
             TabSet::create(
                 "Root",
@@ -681,7 +497,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                 )
             )
         );
-
         if ($this->ID) {
             $fields->addFieldToTab(
                 'Root.Images',
@@ -690,7 +505,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                     $this->fieldLabel('Images')
                 )->setSortColumn('SortOrder')
             );
-
             $fields->addFieldToTab(
                 'Root.Related',
                 GridField::create(
@@ -704,9 +518,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
                 ))
             );
         }
-
         $this->extend('updateCMSFields', $fields);
-
         return $fields;
     }
 

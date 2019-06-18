@@ -31,6 +31,7 @@
         "silverstripe/asset-admin": "~1.0",
         "i-lateral/silverstripe-modeladminplus": "~1.0",
         "silvercommerce/tax-admin": "~1.0",
+        "silvercommerce/taxable-currency": "~1.0",
         "silvercommerce/settings": "~1.0",
         "bummzack/sortablefile": "~2.0"
     },
