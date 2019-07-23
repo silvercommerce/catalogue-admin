@@ -23,3 +23,7 @@
 ## 1.0.5
 
 * Improved adding of import button
+
+## 1.1.0
+
+* Switch to `DBTaxableCurrency` for price/tax calculations

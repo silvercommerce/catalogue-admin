@@ -25,6 +25,7 @@ use SilverStripe\Security\PermissionProvider;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use Bummzack\SortableFile\Forms\SortableUploadField;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
+use SilverCommerce\TaxableCurrency\TaxableExtension;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -94,41 +95,44 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "TagsList"              => "Varchar",
         "ImagesList"            => "Varchar",
         "RelatedProductsList"   => "Varchar",
-        "CMSThumbnail"          => "Varchar",
-        "Price"                 => "Currency",
-        "TaxID"                 => "Int",
-        "TaxRate"               => "Decimal",
-        "TaxAmount"             => "Currency",
-        "PriceAndTax"           => "Currency",
-        "TaxString"             => "Varchar",
-        "IncludesTax"           => "Boolean"
+        "CMSThumbnail"          => "Varchar"
     ];
 
     private static $summary_fields = [
-        "CMSThumbnail"          => "Thumbnail",
-        "ClassName"             => "Product",
-        "StockID"               => "StockID",
-        "Title"                 => "Title",
-        "BasePrice"             => "Price",
-        "TaxRate"               => "Tax Percent",
-        "CategoriesList"        => "Categories",
-        "TagsList"              => "Tags",
-        "Disabled"              => "Disabled"
+        "CMSThumbnail",
+        "ClassName",
+        "StockID",
+        "Title",
+        "NoTaxPrice",
+        "TaxPercentage",
+        "CategoriesList",
+        "TagsList",
+        "Disabled"
     ];
 
     private static $export_fields = [
-        "ID"                    => "ID",
-        "StockID"               => "Stock ID",
+        "ID",
+        "StockID",
+        "ClassName",
+        "Title",
+        "Content",
+        "BasePrice",
+        "TaxRate",
+        "CategoriesList",
+        "TagsList",
+        "ImagesList",
+        "RelatedProductsList",
+        "Disabled"
+    ];
+
+    private static $field_labels = [
+        "CMSThumbnail"          => "Thumbnail",
         "ClassName"             => "Product",
-        "Title"                 => "Title",
-        "Content"               => "Content",
-        "BasePrice"             => "Price",
-        "TaxRate"               => "Tax Percent",
+        "NoTaxPrice"            => "Price",
         "CategoriesList"        => "Categories",
         "TagsList"              => "Tags",
         "ImagesList"            => "Images",
-        "RelatedProductsList"   => "RelatedProducts",
-        "Disabled"              => "Disabled"
+        "RelatedProductsList"   => "Related Products"
     ];
 
     private static $searchable_fields = [
@@ -139,6 +143,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
     private static $default_sort = [
         "Title" => "ASC"
+    ];
+
+    private static $extensions = [
+        TaxableExtension::class
     ];
     
     /**
@@ -162,21 +170,22 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     }
 
     /**
-	 * Stub method to get the site config, unless the current class can provide an alternate.
-	 *
-	 * @return SiteConfig
-	 */
+     * Stub method to get the site config, unless the current class can provide an alternate.
+     *
+     * @return SiteConfig
+     */
     public function getSiteConfig()
     {
-		if($this->hasMethod('alternateSiteConfig')) {
-			$altConfig = $this->alternateSiteConfig();
-			if($altConfig) return $altConfig;
-		}
+        if ($this->hasMethod('alternateSiteConfig')) {
+            $altConfig = $this->alternateSiteConfig();
+            if ($altConfig) {
+                return $altConfig;
+            }
+        }
 
-		return SiteConfig::current_site_config();
-	}
-    
-    
+        return SiteConfig::current_site_config();
+    }
+
     /**
      * Return the link for this {@link SimpleProduct} object, with the
      * {@link Director::baseURL()} included.
@@ -185,6 +194,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      *  Note: URI encoding of this parameter is applied automatically through template casting,
      *  don't encode the passed parameter.
      *  Please use {@link Controller::join_links()} instead to append GET parameters.
+     *
      * @return string
      */
     public function Link($action = null)
@@ -209,6 +219,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
      * Get the absolute URL for this page, including protocol and host.
      *
      * @param string $action See {@link Link()}
+     *
      * @return string
      */
     public function AbsoluteLink($action = null)
@@ -437,89 +448,111 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
     public function getCMSFields()
     {
-        // Get a list of available product classes
-        $classnames = array_values(ClassInfo::subclassesFor(Product::class));
-        $product_types = array();
-        $config = SiteConfig::current_site_config();
-        foreach ($classnames as $classname) {
-            $instance = singleton($classname);
-            $product_types[$classname] = $instance->i18n_singular_name();
-        }
-        $fields = FieldList::create(
-            TabSet::create(
-                "Root",
-                // Main Tab Fields
-                Tab::create(
-                    'Main',
-                    TextField::create("Title"),
-                    CurrencyField::create("BasePrice"),
-                    TextField::create("StockID")
-                        ->setRightTitle(_t("Catalogue.StockIDHelp", "For example, a product SKU")),
-                    HTMLEditorField::create('Content'),
-                    ToggleCompositeField::create(
-                        "SummaryFields",
-                        _t(
-                            "SilverCommerce\CatalogueAdmin.SummaryInfo",
-                            "Summary Info"
-                        ),
-                        [
-                            TextareaField::create("ContentSummary")
-                        ]
-                    )
-                ),
-                // Settings fields
-                Tab::create(
-                    'Settings',
+        $self = $this;
+
+        $this->beforeUpdateCMSFields(
+            function ($fields) use ($self) {
+                $summary_field = $fields->dataFieldByName('ContentSummary');
+                $fields->removeByName("ContentSummary");
+
+                // Get a list of available product classes
+                $classnames = array_values(ClassInfo::subclassesFor(Product::class));
+                $product_types = array();
+
+                foreach ($classnames as $classname) {
+                    $instance = singleton($classname);
+                    $product_types[$classname] = $instance->i18n_singular_name();
+                }
+
+                $fields->addFieldToTab(
+                    "Root.Settings",
                     DropdownField::create(
                         "ClassName",
                         _t("CatalogueAdmin.ProductType", "Type of product"),
                         $product_types
-                    ),
-                    DropdownField::create(
-                        "TaxCategoryID",
-                        _t("SilverCommerce\CatalogueAdmin.Tax", "Tax"),
-                        $config->TaxCategories()->map()
-                    )->setEmptyString(_t("SilverCommerce\CatalogueAdmin.None", "None")),
-                    TreeMultiSelectField::create(
-                        "Categories",
-                        $this->fieldLabel("Categories"),
-                        CatalogueCategory::class
-                    ),
-                    TagField::create(
-                        'Tags',
-                        $this->fieldLabel("Tags"),
-                        ProductTag::get(),
-                        $this->Tags()
-                    )->setCanCreate($this->canCreateTags())
-                    ->setShouldLazyLoad(true),
-                    NumericField::create("Weight")
+                    )
+                );
+
+                $fields->addFieldToTab(
+                    'Root.Main',
+                    ToggleCompositeField::create(
+                        'SummaryFields',
+                        _t(
+                            "SilverCommerce\CatalogueAdmin.SummaryInfo",
+                            "Summary Info"
+                        ),
+                        [$summary_field]
+                    )
+                );
+
+                $stock_field = $fields->dataFieldByName('StockID');
+
+                if (!empty($stock_field)) {
+                    $stock_field->setRightTitle(
+                        _t("Catalogue.StockIDHelp", "For example, a product SKU")
+                    );
+                }
+
+                $categories_field = $fields->dataFieldByName('Categories');
+                if (!empty($categories_field)) {
+                    $fields->removeByName('Categories');
+                    $fields->addFieldToTab(
+                        "Root.Settings",
+                        TreeMultiSelectField::create(
+                            'Categories',
+                            $this->fieldLabel('Categories'),
+                            CatalogueCategory::class
+                        )
+                    );
+                }
+
+                $tags_field = $fields->dataFieldByName('Tags');
+                if (!empty($tags_field)) {
+                    $fields->removeByName('Tags');
+                    $fields->addFieldToTab(
+                        "Root.Settings",
+                        TagField::create(
+                            'Tags',
+                            $this->fieldLabel("Tags"),
+                            ProductTag::get(),
+                            $this->Tags()
+                        )->setCanCreate($this->canCreateTags())
+                        ->setShouldLazyLoad(true)
+                    );
+                }
+
+                $images_field = $fields->dataFieldByName('Images');
+                if (!empty($images_field)) {
+                    $fields->addFieldToTab(
+                        'Root.Images',
+                        SortableUploadField::create(
+                            'Images',
+                            $this->fieldLabel('Images')
+                        )->setSortColumn('SortOrder')
+                    );
+                }
+
+                $related_field = $fields->dataFieldByName('RelatedProducts');
+                if (!empty($related_field)) {
+                    $related_field->setConfig(
+                        new GridFieldConfig_CatalogueRelated(
+                            Product::class,
+                            null,
+                            'SortOrder'
+                        )
+                    );
+                }
+
+                $fields->addFieldToTab(
+                    'Root.Settings',
+                    $fields
+                        ->dataFieldByName('Weight')
                         ->setScale(2)
-                )
-            )
+                );
+            }
         );
-        if ($this->ID) {
-            $fields->addFieldToTab(
-                'Root.Images',
-                SortableUploadField::create(
-                    'Images',
-                    $this->fieldLabel('Images')
-                )->setSortColumn('SortOrder')
-            );
-            $fields->addFieldToTab(
-                'Root.Related',
-                GridField::create(
-                    'RelatedProducts',
-                    "",
-                    $this->RelatedProducts()
-                )->setConfig(new GridFieldConfig_CatalogueRelated(
-                    Product::class,
-                    null,
-                    'SortOrder'
-                ))
-            );
-        }
-        $this->extend('updateCMSFields', $fields);
-        return $fields;
+
+        return parent::getCMSFields();
     }
 
     public function getCMSValidator()
