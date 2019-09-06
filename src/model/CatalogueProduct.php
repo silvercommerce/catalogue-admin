@@ -4,6 +4,7 @@ namespace SilverCommerce\CatalogueAdmin\Model;
 
 use Product;
 use SilverStripe\ORM\DB;
+use SilverStripe\i18n\i18n;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\SSViewer;
@@ -19,13 +20,17 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\SiteConfig\SiteConfig;
+use SilverCommerce\TaxAdmin\Model\TaxRate;
+use SilverCommerce\TaxAdmin\Traits\Taxable;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\Forms\TreeMultiselectField;
+use SilverCommerce\TaxAdmin\PricingExtension;
 use SilverStripe\Security\PermissionProvider;
+use SilverCommerce\TaxAdmin\Model\TaxCategory;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use Bummzack\SortableFile\Forms\SortableUploadField;
+use SilverCommerce\TaxAdmin\Interfaces\TaxableProvider;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
-use SilverCommerce\TaxableCurrency\TaxableExtension;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -38,8 +43,9 @@ use SilverCommerce\TaxableCurrency\TaxableExtension;
  * @author i-lateral (http://www.i-lateral.com)
  * @package catalogue
  */
-class CatalogueProduct extends DataObject implements PermissionProvider
+class CatalogueProduct extends DataObject implements PermissionProvider, TaxableProvider
 {
+    use Taxable;
     
     private static $table_name = 'CatalogueProduct';
     
@@ -62,12 +68,17 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     
     private static $db = [
         "Title"             => "Varchar(255)",
+        "BasePrice"         => "Decimal(9,3)",
         "StockID"           => "Varchar",
-        "Price"             => "TaxableCurrency",
         "Content"           => "HTMLText",
         "ContentSummary"    => "Text",
         "Weight"            => "Decimal",
         "Disabled"          => "Boolean"
+    ];
+
+    private static $has_one = [
+        'TaxRate' => TaxRate::class,
+        'TaxCategory' => TaxCategory::class
     ];
 
     private static $many_many = [
@@ -145,9 +156,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         "Title" => "ASC"
     ];
 
-    private static $extensions = [
-        TaxableExtension::class
-    ];
+    public function getBasePrice()
+    {
+        return $this->dbObject('BasePrice')->getValue();
+    }
     
     /**
      * Is this object enabled?
@@ -187,6 +199,67 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     }
 
     /**
+     * Get should this field automatically show the price including TAX?
+     *
+     * @return bool
+     */
+    public function getShowPriceWithTax()
+    {
+        $show = $this->getSiteConfig()->ShowPriceAndTax;
+
+        $result = $this->filterTaxableExtensionResults(
+            $this->extend("updateShowPriceWithTax", $show)
+        );
+
+        if (!empty($result)) {
+            return (bool)$result;
+        }
+
+        return (bool)$show;
+    }
+
+    /**
+     * Get if this field should add a "Tax String" (EG Includes VAT) to the rendered
+     * currency?
+     *
+     * @return bool|null
+     */
+    public function getShowTaxString()
+    {
+        $show = $this->getSiteConfig()->ShowPriceTaxString;
+
+        $result = $this->filterTaxableExtensionResults(
+            $this->extend("updateShowTaxString", $show)
+        );
+
+        if (!empty($result)) {
+            return (bool)$result;
+        }
+
+        return (bool)$show;
+    }
+
+    /**
+     * Return the currently available locale
+     * 
+     * @return string 
+     */
+    public function getLocale()
+    {
+        return i18n::get_locale();
+    }
+
+    /**
+     * Shortcut for the first category assigned to this product
+     *
+     * @return CaltalogueCategory
+     */
+    public function Parent()
+    {
+        return $this->Categories()->first();
+    }
+
+    /**
      * Return the link for this {@link SimpleProduct} object, with the
      * {@link Director::baseURL()} included.
      *
@@ -203,16 +276,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider
             Director::baseURL(),
             $this->RelativeLink($action)
         );
-    }
-
-    /**
-     * Shortcut for the first category assigned to this product
-     *
-     * @return CaltalogueCategory
-     */
-    public function Parent()
-    {
-        return $this->Categories()->first();
     }
     
     /**
@@ -248,8 +311,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
         return $link;
 	}
-    
-    
+
     /**
      * We use this to tap into the categories "isSection" setup,
      * essentially adding the product's first category to the list
@@ -281,6 +343,31 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     }
 
     /**
+     * Find a tax rate based on the selected ID, or revert to using the valid tax
+     * from the current category
+     *
+     * @return \SilverCommerce\TaxAdmin\Model\TaxRate
+     */
+    public function getTaxRate()
+    {
+        $tax = TaxRate::get()->byID($this->TaxRateID);
+
+        // If no tax explicity set, try to get from category
+        if (empty($tax)) {
+            $category = TaxCategory::get()->byID($this->TaxCategoryID);
+
+            $tax = (!empty($category)) ? $category->ValidTax() : null ;
+        }
+
+        if (empty($tax)) {
+            $tax = TaxRate::create();
+            $tax->ID = -1;
+        }
+
+        return $tax;
+    }
+
+    /**
      * Return sorted products related to this product
      *
      * @return ArrayList
@@ -289,10 +376,12 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     {
         return $this
             ->RelatedProducts()
-            ->Sort([
-                "SortOrder" => "ASC",
-                "Title" => "ASC"
-            ]);
+            ->Sort(
+                [
+                    "SortOrder" => "ASC",
+                    "Title" => "ASC"
+                ]
+            );
     }
 
     /**
@@ -352,10 +441,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider
         
         $ancestors = $this->getAncestors(true);
 
-        if($ancestors->exists()) {
+        if ($ancestors->exists()) {
             $items[] = $this;
 
-            foreach($ancestors as $item) {
+            foreach ($ancestors as $item) {
                 $items[] = $item;
             }
         }
@@ -385,7 +474,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     {
         $list = [];
         
-        foreach($this->Categories() as $cat) {
+        foreach ($this->Categories() as $cat) {
             $list[] = $cat->FullHierarchy;
         }
 
@@ -452,6 +541,34 @@ class CatalogueProduct extends DataObject implements PermissionProvider
 
         $this->beforeUpdateCMSFields(
             function ($fields) use ($self) {
+                // Add field group to add Price and Tax field
+                $fields->removeByName(['BasePrice', 'TaxCategoryID', 'TaxRateID']);
+
+                $field = FieldGroup::create(
+                    $this->getOwner()->dbObject("BasePrice")->scaffoldFormField(''),
+                    DropdownField::create('TaxCategoryID', "", TaxCategory::get())
+                        ->setEmptyString(
+                            _t(self::class . '.SelectTaxCategory', 'Select a Tax Category')
+                        ),
+                    ReadonlyField::create("PriceOr", "")
+                        ->addExtraClass("text-center")
+                        ->setValue(_t(self::class . '.OR', ' OR ')),
+                    DropdownField::create(
+                        'TaxRateID',
+                        "",
+                        TaxRate::get()
+                    )->setEmptyString(
+                        _t(self::class . '.SelectTaxRate', 'Select a Tax Rate')
+                    )
+                )->setName('PriceFields')
+                ->setTitle($this->getOwner()->fieldLabel('Price'));
+
+                $fields->addFieldToTab(
+                    'Root.Main',
+                    $field,
+                    'Content'
+                );
+
                 $summary_field = $fields->dataFieldByName('ContentSummary');
                 $fields->removeByName("ContentSummary");
 

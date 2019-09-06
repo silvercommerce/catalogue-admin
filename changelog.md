@@ -26,4 +26,4 @@
 
 ## 1.1.0
 
-* Switch to `DBTaxableCurrency` for price/tax calculations
+* Switch to using `Taxable` for price/tax calculations
