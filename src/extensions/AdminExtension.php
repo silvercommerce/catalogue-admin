@@ -7,7 +7,7 @@ use SilverStripe\View\Requirements;
 
 /**
  * Inject extra requirements into the CMS
- * 
+ *
  * @author i-lateral (http://www.i-lateral.com)
  * @package orders
  */

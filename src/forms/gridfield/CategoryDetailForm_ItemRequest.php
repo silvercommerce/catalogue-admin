@@ -29,14 +29,15 @@ class CategoryDetailForm_ItemRequest extends EnableDisableDetailForm_ItemRequest
         );
     }
 
-	/**
-	 * Overload default edit form
-	 *
-	 * @return Form
-	 */
-	public  function ItemEditForm() {
-		$form = parent::ItemEditForm();
+    /**
+     * Overload default edit form
+     *
+     * @return Form
+     */
+    public function ItemEditForm()
+    {
+        $form = parent::ItemEditForm();
         
-		return $form;
-	}
+        return $form;
+    }
 }

@@ -19,8 +19,8 @@ use SilverStripe\Assets\Storage\AssetStore;
 class Helper extends ViewableData
 {
     /**
-     * Template names to be removed from the default template list 
-     * 
+     * Template names to be removed from the default template list
+     *
      * @var array
      * @config
      */
@@ -59,7 +59,7 @@ class Helper extends ViewableData
     /**
      * Copy the default no product image from this module and then
      * add a new image to the DB.
-     * 
+     *
      * Returns the new image, so it can be assigned
      */
     public static function generate_no_image()

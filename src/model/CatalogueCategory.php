@@ -31,10 +31,10 @@ use \Category;
  * Base class for all product categories stored in the database. The
  * intention is to allow category objects to be extended in the same way
  * as a more conventional "Page" object.
- * 
+ *
  * This allows users familier with working with the CMS a common
  * platform for developing ecommerce type functionality.
- * 
+ *
  * @author i-lateral (http://www.i-lateral.com)
  * @package catalogue
  */
@@ -46,7 +46,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     /**
      * Description for this object that will get loaded by the website
      * when it comes to creating it for the first time.
-     * 
+     *
      * @var string
      * @config
      */
@@ -55,7 +55,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     /**
      * What character shall we use to seperate hierachy elements
      * when rendering a categories hierarchy?
-     * 
+     *
      * @var string
      */
     private static $hierarchy_seperator = "/";
@@ -108,7 +108,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     /**
      * Is this object enabled?
-     * 
+     *
      * @return Boolean
      */
     public function isEnabled()
@@ -118,7 +118,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     /**
      * Is this object disabled?
-     * 
+     *
      * @return Boolean
      */
     public function isDisabled()
@@ -127,25 +127,28 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     }
 
     /**
-	 * Stub method to get the site config, unless the current class can provide an alternate.
-	 *
-	 * @return SiteConfig
-	 */
-	public function getSiteConfig(){
+     * Stub method to get the site config, unless the current class can provide an alternate.
+     *
+     * @return SiteConfig
+     */
+    public function getSiteConfig()
+    {
 
-		if($this->hasMethod('alternateSiteConfig')) {
-			$altConfig = $this->alternateSiteConfig();
-			if($altConfig) return $altConfig;
-		}
+        if ($this->hasMethod('alternateSiteConfig')) {
+            $altConfig = $this->alternateSiteConfig();
+            if ($altConfig) {
+                return $altConfig;
+            }
+        }
 
-		return SiteConfig::current_site_config();
-	}
+        return SiteConfig::current_site_config();
+    }
 
     /**
      * Return the link for this {@link SimpleProduct} object, with the
      * {@link Director::baseURL()} included.
      *
-     * @param string $action Optional controller action (method). 
+     * @param string $action Optional controller action (method).
      *  Note: URI encoding of this parameter is applied automatically through template casting,
      *  don't encode the passed parameter.
      *  Please use {@link Controller::join_links()} instead to append GET parameters.
@@ -175,23 +178,23 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     }
 
     /**
-	 * Return the link for this {@link Category}
-	 *
-	 * 
-	 * @param string $action See {@link Link()}
-	 * @return string
-	 */
-	public function RelativeLink($action = null)
+     * Return the link for this {@link Category}
+     *
+     *
+     * @param string $action See {@link Link()}
+     * @return string
+     */
+    public function RelativeLink($action = null)
     {
         $link = Controller::join_links(
             $this->ID,
             $action
         );
-		
-		$this->extend('updateRelativeLink', $link, $action);
+        
+        $this->extend('updateRelativeLink', $link, $action);
 
         return $link;
-	}
+    }
 
     public function getMenuTitle()
     {
@@ -236,7 +239,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      * Eg: Department/Sub Department/Sub Sub Department
      *
      * @param string $hierarchy A list of departments and sub departments, seperated by a forward slash
-     * 
+     *
      * @return CatalogueCategory | null
      */
     public static function getFromHierarchy($hierarchy)
@@ -387,7 +390,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     /**
      * Get a list of all tags on products within this category
-     * 
+     *
      * @return SSList|null
      */
     public function AllTags()
@@ -424,9 +427,8 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             $fields->removeByName("Products");
             
             if ($this->exists()) {
-
                 // Ensure that we set the parent ID to the current category
-                // when creating a new record 
+                // when creating a new record
                 $fields->addFieldToTab(
                     'Root.Children',
                     GridField::create(
@@ -444,7 +446,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
                 if ($child_edit) {
                     $self = $this; // PHP 5.3 support - $this can't be used in closures
-                    $child_edit->setItemEditFormCallback(function($form, $itemRequest) use ($self) {
+                    $child_edit->setItemEditFormCallback(function ($form, $itemRequest) use ($self) {
                         $record = $form->getRecord();
 
                         if (!$record->ID) {

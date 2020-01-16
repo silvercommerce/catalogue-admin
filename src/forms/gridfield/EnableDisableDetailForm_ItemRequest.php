@@ -27,9 +27,9 @@ class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemReques
     {
         $form = parent::ItemEditForm();
 
-		if ($form && $this->record->ID !== 0 && $this->record->canEdit()) {
-			$fields = $form->Fields();
-			$actions = $form->Actions();
+        if ($form && $this->record->ID !== 0 && $this->record->canEdit()) {
+            $fields = $form->Fields();
+            $actions = $form->Actions();
         
             // Remove the disabled field
             $fields->removeByName("Disabled");
@@ -57,7 +57,7 @@ class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemReques
             }
         }
         
-		$this->extend("updateItemEditForm", $form);
+        $this->extend("updateItemEditForm", $form);
         
         return $form;
     }

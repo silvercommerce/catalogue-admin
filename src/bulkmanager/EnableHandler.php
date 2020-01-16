@@ -29,7 +29,7 @@ class EnableHandler extends GridFieldBulkActionHandler
 
     /**
      * Front-end label for this handler's action
-     * 
+     *
      * @var string
      */
     protected $label = 'Enable';
@@ -38,7 +38,7 @@ class EnableHandler extends GridFieldBulkActionHandler
 
     /**
      * Whether this handler should be called via an XHR from the front-end
-     * 
+     *
      * @var boolean
      */
     protected $xhr = true;
@@ -46,7 +46,7 @@ class EnableHandler extends GridFieldBulkActionHandler
     /**
      * Set to true is this handler will destroy any data.
      * A warning and confirmation will be shown on the front-end.
-     * 
+     *
      * @var boolean
      */
     protected $destructive = false;

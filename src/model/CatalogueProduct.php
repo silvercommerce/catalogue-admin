@@ -38,10 +38,10 @@ use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelat
  * Base class for all products stored in the database. The intention is
  * to allow Product objects to be extended in the same way as a more
  * conventional "Page" object.
- * 
+ *
  * This allows users familier with working with the CMS a common
  * platform for developing ecommerce type functionality.
- * 
+ *
  * @author i-lateral (http://www.i-lateral.com)
  * @package catalogue
  */
@@ -54,7 +54,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     /**
      * Determines if a product's stock ID will be auto generated if
      * not set.
-     * 
+     *
      * @config
      */
     private static $auto_stock_id = true;
@@ -62,7 +62,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     /**
      * Description for this object that will get loaded by the website
      * when it comes to creating it for the first time.
-     * 
+     *
      * @var string
      * @config
      */
@@ -165,7 +165,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     
     /**
      * Is this object enabled?
-     * 
+     *
      * @return Boolean
      */
     public function isEnabled()
@@ -175,7 +175,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     
     /**
      * Is this object disabled?
-     * 
+     *
      * @return Boolean
      */
     public function isDisabled()
@@ -243,8 +243,8 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
 
     /**
      * Return the currently available locale
-     * 
-     * @return string 
+     *
+     * @return string
      */
     public function getLocale()
     {
@@ -265,7 +265,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
      * Return the link for this {@link SimpleProduct} object, with the
      * {@link Director::baseURL()} included.
      *
-     * @param string $action Optional controller action (method). 
+     * @param string $action Optional controller action (method).
      *  Note: URI encoding of this parameter is applied automatically through template casting,
      *  don't encode the passed parameter.
      *  Please use {@link Controller::join_links()} instead to append GET parameters.
@@ -297,37 +297,39 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     }
     
     /**
-	 * Return the link for this {@link Product}
-	 *
-	 * @param string $action See {@link Link()}
-	 * @return string
-	 */
-	public function RelativeLink($action = null)
+     * Return the link for this {@link Product}
+     *
+     * @param string $action See {@link Link()}
+     * @return string
+     */
+    public function RelativeLink($action = null)
     {
         $link = Controller::join_links(
             $this->ID,
             $action
         );
 
-		$this->extend('updateRelativeLink', $link, $action);
+        $this->extend('updateRelativeLink', $link, $action);
 
         return $link;
-	}
+    }
 
     /**
      * We use this to tap into the categories "isSection" setup,
      * essentially adding the product's first category to the list
-     * 
+     *
      * @param $include_parent Include the direct parent of this product
-     * @return ArrayList 
+     * @return ArrayList
      */
     public function getAncestors($include_parent = false)
     {
         $ancestors = ArrayList::create();
         $object    = $this->Categories()->first();
 
-        if($object) {
-            if($include_parent) $ancestors->push($object);
+        if ($object) {
+            if ($include_parent) {
+                $ancestors->push($object);
+            }
 
             while ($object = $object->getParent()) {
                 $ancestors->push($object);
@@ -389,7 +391,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     /**
      * Get a primary image (first image we find)
      * for this product
-     * 
+     *
      * @return Image
      */
     public function PrimaryImage()
@@ -469,7 +471,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     /**
      * Generate a comma seperated list of category names
      * assigned to this product.
-     * 
+     *
      * @return string
      */
     public function getCategoriesList()
@@ -486,7 +488,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     /**
      * Generate a comma seperated list of tag names
      * assigned to this product.
-     * 
+     *
      * @return string
      */
     public function getTagsList()
@@ -498,7 +500,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     /**
      * Generate a comma seperated list of image names
      * assigned to this product.
-     * 
+     *
      * @return string
      */
     public function getImagesList()
@@ -510,7 +512,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     /**
      * Generate a comma seperated list of related product
      * stock IDs for this product.
-     * 
+     *
      * @return string
      */
     public function getRelatedProductsList()
@@ -522,7 +524,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     /**
      * Generate a stock ID, based on the title and ID
      * of this product
-     * 
+     *
      * @return string
      */
     protected function generateStockID()

@@ -41,7 +41,7 @@ class SiteConfigExtension extends DataExtension
     ];
 
     public function updateCMSFields(FieldList $fields)
-    {   
+    {
         // Add config sets
         $fields->addFieldsToTab(
             'Root.Shop',

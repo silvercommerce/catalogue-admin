@@ -52,14 +52,14 @@ class ProductCSVBulkLoader extends CsvBulkLoader
 
     /**
      * Generate the selected relation from the provided array of values
-     * 
+     *
      * @param string $object   The current object being imported
      * @param string $relation The name of the relation (eg Images)
      * @param array  $list     The list of values
      * @param string $class    The source class of the relation (eg SilverStripe\Assets\Image)
      * @param string $column   The name of the column to search for existing records
      * @param string $create   Create a new object if none found
-     * 
+     *
      * @return void
      */
     protected function createRelationFromList(
@@ -89,7 +89,7 @@ class ProductCSVBulkLoader extends CsvBulkLoader
                 }
             }
         }
-    } 
+    }
 
     public function processRecord($record, $columnMap, &$results, $preview = false)
     {
@@ -101,10 +101,8 @@ class ProductCSVBulkLoader extends CsvBulkLoader
         $this->extend("onBeforeProcess", $object, $record, $columnMap, $results, $preview);
         
         if ($object != null) {
-
             // Loop through all fields and setup associations
             foreach ($record as $key => $value) {
-
                 // Find and add any categories imported
                 if ($key == 'Categories' && !empty($value)) {
                     $object->Categories()->removeAll();

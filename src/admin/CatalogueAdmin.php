@@ -28,14 +28,14 @@ class CatalogueAdmin extends ModelAdminPlus
 {
     /**
      * Set the page length for products
-     * 
+     *
      * @config
      */
     private static $product_page_length = 20;
     
     /**
      * Set the page length for categories
-     * 
+     *
      * @config
      */
     private static $category_page_length = 20;
