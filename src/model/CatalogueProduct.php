@@ -536,7 +536,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
         
         return $title . "-" . $this->ID;
     }
-
     public function getCMSFields()
     {
         $self = $this;
@@ -571,9 +570,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
                     'Content'
                 );
 
-                $summary_field = $fields->dataFieldByName('ContentSummary');
-                $fields->removeByName("ContentSummary");
-
                 // Get a list of available product classes
                 $classnames = array_values(ClassInfo::subclassesFor(Product::class));
                 $product_types = array();
@@ -592,20 +588,23 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
                     )
                 );
 
-                $fields->addFieldToTab(
-                    'Root.Main',
-                    ToggleCompositeField::create(
-                        'SummaryFields',
-                        _t(
-                            "SilverCommerce\CatalogueAdmin.SummaryInfo",
-                            "Summary Info"
-                        ),
-                        [$summary_field]
-                    )
-                );
+                $summary_field = $fields->dataFieldByName('ContentSummary');
+                if (!empty($summary_field)) {
+                    $fields->removeByName("ContentSummary");
+                    $fields->addFieldToTab(
+                        'Root.Main',
+                        ToggleCompositeField::create(
+                            'SummaryFields',
+                            _t(
+                                "SilverCommerce\CatalogueAdmin.SummaryInfo",
+                                "Summary Info"
+                            ),
+                            [$summary_field]
+                        )
+                    );
+                }
 
                 $stock_field = $fields->dataFieldByName('StockID');
-
                 if (!empty($stock_field)) {
                     $stock_field->setRightTitle(
                         _t("Catalogue.StockIDHelp", "For example, a product SKU")
@@ -662,12 +661,13 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
                     );
                 }
 
-                $fields->addFieldToTab(
-                    'Root.Settings',
-                    $fields
-                        ->dataFieldByName('Weight')
-                        ->setScale(2)
-                );
+                $weight_field = $fields->dataFieldByName('Weight');
+                if (!empty($weight_field)) {
+                    $fields->addFieldToTab(
+                        'Root.Settings',
+                        $weight_field->setScale(2)
+                    );
+                }
             }
         );
 

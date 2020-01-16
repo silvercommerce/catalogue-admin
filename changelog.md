@@ -27,3 +27,7 @@
 ## 1.1.0
 
 * Switch to using `Taxable` for price/tax calculations
+
+## 1.1.1
+
+* Ensure CMS field modifications only apply if the field exists
