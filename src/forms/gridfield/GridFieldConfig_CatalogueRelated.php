@@ -2,9 +2,10 @@
 
 namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
-use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
+use SilverStripe\Forms\GridField\GridFieldExportButton;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 
 /**
  * Allows editing of records contained within the GridField, instead of only allowing the ability to view records in
@@ -27,13 +28,10 @@ class GridFieldConfig_CatalogueRelated extends GridFieldConfig_Catalogue
         parent::__construct($classname, $itemsPerPage, $sort_col);
 
         // Remove uneeded components
-        $this->removeComponentsByType('GridFieldDeleteAction');
-        $this->removeComponentsByType('GridFieldExportButton');
+        $this->removeComponentsByType(GridFieldDeleteAction::class);
+        $this->removeComponentsByType(GridFieldExportButton::class);
 
         $this->addComponent(new GridFieldAddExistingAutocompleter('buttons-before-right'));
         $this->addComponent(new GridFieldDeleteAction(true));
-        if ($sort_col != false) {
-            $this->addComponent(new GridFieldOrderableRows($sort_col));
-        }
     }
 }
