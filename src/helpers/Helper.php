@@ -5,9 +5,14 @@ namespace SilverCommerce\CatalogueAdmin\Helpers;
 use ReflectionClass;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Image;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\View\ViewableData;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Assets\Storage\AssetStore;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
 
 /**
  * Simple helper class to provide common functions across
@@ -25,12 +30,46 @@ class Helper extends ViewableData
      * @config
      */
     private static $classes_to_remove = [
-        "Object",
-        "ViewableData",
-        "DataObject",
-        "CatalogueProduct",
-        "CatalogueCategory"
+        ViewableData::class,
+        DataObject::class,
+        CatalogueProduct::class,
+        CatalogueCategory::class
     ];
+
+    /**
+     * Generate an array of classes that can be loaded into a "ClassName" dropdown
+     *
+     * @param string $base_classname Classname of object we will get list for
+     *
+     * @return array
+     */
+    public static function getCreatableClasses($base_classname)
+    {
+        // Get a list of available product classes
+        $instance = singleton($base_classname);
+        $classnames = ClassInfo::subclassesFor($base_classname);
+        $return = [];
+
+        foreach ($classnames as $classname) {
+            // Remove the base level class from the loop
+            if ($classname == $base_classname) {
+                continue;
+            }
+
+            $instance = singleton($classname);
+            $description = Config::inst()->get($classname, 'description');
+
+            if (!empty($description)) {
+                $description = $instance->i18n_singular_name() . ': ' . $description;
+            } else {
+                $description = $instance->i18n_singular_name();
+            }
+
+            $return[$classname] = $description;
+        }
+
+        return $return;
+    }
 
     /**
      * Get a list of templates for rendering
