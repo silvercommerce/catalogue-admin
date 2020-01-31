@@ -2,9 +2,6 @@
 
 namespace SilverCommerce\CatalogueAdmin\Admin;
 
-use \Product;
-use \Category;
-use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Core\Config\Config;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
@@ -14,6 +11,8 @@ use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverStripe\Forms\GridField\GridFieldPrintButton;
 use ilateral\SilverStripe\ModelAdminPlus\ModelAdminPlus;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
@@ -47,24 +46,77 @@ class CatalogueAdmin extends ModelAdminPlus
     private static $menu_priority = 11;
 
     private static $managed_models = [
-        Product::class,
-        Category::class,
+        CatalogueProduct::class,
+        CatalogueCategory::class,
         ProductTag::class
     ];
 
     private static $model_importers = [
-        Product::class => ProductCSVBulkLoader::class
+        CatalogueProduct::class => ProductCSVBulkLoader::class
     ];
 
+    /**
+     * Is the current managed model a category?
+     *
+     * @return boolean
+     */
+    protected function isCategory()
+    {
+        $singleton = singleton($this->getModelClass());
+
+        if (is_a($singleton, CatalogueCategory::class)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Is the current managed model a product?
+     *
+     * @return boolean
+     */
+    protected function isProduct()
+    {
+        $singleton = singleton($this->getModelClass());
+
+        if (is_a($singleton, CatalogueProduct::class)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Is the current managed model a product tag?
+     *
+     * @return boolean
+     */
+    protected function isTag()
+    {
+        $singleton = singleton($this->getModelClass());
+
+        if (is_a($singleton, ProductTag::class)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Update the current gridfield list
+     *
+     * @return \SilverStripe\ORM\SS_List
+     */
     public function getList()
     {
         $list = parent::getList();
-        
+
         // Filter categories
-        if ($this->modelClass == Category::class) {
+        if ($this->isCategory()) {
             $list = $list->filter('ParentID', 0);
         }
-        
+
         $this->extend('updateList', $list);
 
         return $list;
@@ -93,7 +145,7 @@ class CatalogueAdmin extends ModelAdminPlus
                 );
         }
 
-        if ($this->modelClass == Product::class && $grid) {
+        if ($this->isProduct()) {
             $grid->setConfig(GridFieldConfig_Catalogue::create(
                 $this->modelClass,
                 $this->config()->product_page_length
@@ -101,7 +153,7 @@ class CatalogueAdmin extends ModelAdminPlus
             $add_import = true;
         }
         
-        if ($this->modelClass == Category::class && $grid) {
+        if ($this->isCategory()) {
             $grid->setConfig(GridFieldConfig_Catalogue::create(
                 $this->modelClass,
                 $this->config()->category_page_length,
@@ -110,7 +162,7 @@ class CatalogueAdmin extends ModelAdminPlus
             $add_import = true;
         }
 
-        if ($this->modelClass == ProductTag::class && $grid) {
+        if ($this->isTag()) {
             $grid
                 ->getConfig()
                 ->removeComponentsByType(GridFieldPrintButton::class)
