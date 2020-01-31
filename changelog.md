@@ -31,3 +31,9 @@
 ## 1.1.1
 
 * Ensure CMS field modifications only apply if the field exists
+
+## 1.2.0
+
+* Fix issue where sub categories are not automatically linked to parents
+* Update gridfields to use action menus
+* Remove custom item request class for existing categories

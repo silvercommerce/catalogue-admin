@@ -3,8 +3,6 @@
 namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
 use SilverStripe\Forms\GridField\GridFieldConfig;
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\GridField\GridFieldButtonRow;
 use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\GridField\GridFieldSortableHeader;
@@ -13,14 +11,14 @@ use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldEditButton;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldPageCount;
-use SilverStripe\Forms\GridField\GridFieldPaginator;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
-use Symbiote\GridFieldExtensions\GridFieldAddNewMultiClass;
 use Colymba\BulkManager\BulkManager as GridFieldBulkManager;
 use Colymba\BulkManager\BulkAction\UnlinkHandler;
 use SilverCommerce\CatalogueAdmin\BulkManager\DisableHandler;
 use SilverCommerce\CatalogueAdmin\BulkManager\EnableHandler;
+use SilverCommerce\CatalogueAdmin\Helpers\Helper;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
 use Symbiote\GridFieldExtensions\GridFieldConfigurablePaginator;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 
@@ -33,32 +31,6 @@ use SilverStripe\Forms\GridField\GridFieldDetailForm;
  */
 class GridFieldConfig_Catalogue extends GridFieldConfig
 {
-
-    /**
-     * Get a list of subclasses for the chosen type (either CatalogueProduct
-     * or CatalogueCategory).
-     *
-     * @param string $classname Classname of object we will get list for
-     * @return array
-     */
-    protected function get_subclasses($classname)
-    {
-        // Get a list of available product classes
-        $classnames = ClassInfo::subclassesFor($classname);
-        $return = [];
-
-        foreach ($classnames as $classname) {
-            $instance = singleton($classname);
-            $description = Config::inst()->get($classname, 'description');
-            $description = ($description) ? $instance->i18n_singular_name() . ': ' . $description : $instance->i18n_singular_name();
-            
-            $return[$classname] = $description;
-        }
-
-        asort($return);
-        return $return;
-    }
-
     /**
      *
      * @param array $classname Name of class who's subclasses will be added to form
@@ -86,24 +58,18 @@ class GridFieldConfig_Catalogue extends GridFieldConfig
         $manager->removeBulkAction(UnlinkHandler::class);
         $manager->addBulkAction(DisableHandler::class);
         $manager->addBulkAction(EnableHandler::class);
-
         $this->addComponent($manager);
 
         // Setup add new button
-        $add_button = new GridFieldAddNewMultiClass("buttons-before-left");
-        $add_button->setClasses($this->get_subclasses($classname));
+        $subclasses = Helper::getCreatableClasses($classname);
+        $add_button = new AddNewMultiClass("buttons-before-left");
+        $add_button->setClasses($subclasses);
 
-        // If we are managing a category, use the relevent field, else
-        // use product
+        // If we are managing a category, use the relevent field,
+        // else use product
         $detail_form = new GridFieldDetailForm();
-
-        if ($classname == Category::class) {
-            $detail_form
-                ->setItemRequestClass(CategoryDetailForm_ItemRequest::class);
-        } else {
-            $detail_form
-                ->setItemRequestClass(EnableDisableDetailForm_ItemRequest::class);
-        }
+        $detail_form
+            ->setItemRequestClass(EnableDisableDetailForm_ItemRequest::class);
         
         $this->addComponent($detail_form);
         $this->addComponent($add_button);

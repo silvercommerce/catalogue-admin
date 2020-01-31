@@ -2,30 +2,25 @@
 
 namespace SilverCommerce\CatalogueAdmin\Model;
 
-use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\Hierarchy\Hierarchy;
-use SilverStripe\Security\PermissionProvider;
+use SilverStripe\View\SSViewer;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\View\ArrayData;
 use SilverStripe\Security\Member;
+use SilverStripe\Control\Director;
+use SilverStripe\Control\Controller;
+use SilverStripe\Forms\DropdownField;
 use SilverStripe\Security\Permission;
 use SilverStripe\SiteConfig\SiteConfig;
-use SilverStripe\Control\Controller;
-use SilverStripe\Control\Director;
-use SilverStripe\View\SSViewer;
-use SilverStripe\View\ArrayData;
-use SilverStripe\Core\ClassInfo;
-use SilverStripe\Forms\TextField;
-use SilverStripe\Forms\TextareaField;
-use SilverStripe\Forms\ToggleCompositeField;
-use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\TreeDropdownField;
-use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Core\Convert;
+use SilverStripe\ORM\Hierarchy\Hierarchy;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Security\PermissionProvider;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
-use SilverCommerce\CatalogueAdmin\Catalogue;
-use \Category;
+use SilverCommerce\CatalogueAdmin\Helpers\Helper;
+use SilverStripe\Forms\HiddenField;
 
 /**
  * Base class for all product categories stored in the database. The
@@ -59,6 +54,13 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      * @var string
      */
     private static $hierarchy_seperator = "/";
+
+    /**
+     * The default class used to exenend this oblect
+     *
+     * @var string
+     */
+    private static $default_subclass = \Category::class;
 
     private static $db = [
         "Title"             => "Varchar",
@@ -133,7 +135,6 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      */
     public function getSiteConfig()
     {
-
         if ($this->hasMethod('alternateSiteConfig')) {
             $altConfig = $this->alternateSiteConfig();
             if ($altConfig) {
@@ -414,13 +415,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             }
 
             // Get a list of available product classes
-            $classnames = array_values(ClassInfo::subclassesFor(Category::class));
-            $category_types = array();
-
-            foreach ($classnames as $classname) {
-                $instance = singleton($classname);
-                $category_types[$classname] = $instance->i18n_singular_name();
-            }
+            $category_classes = Helper::getCreatableClasses(CatalogueCategory::class);
 
             $fields->removeByName("Sort");
             $fields->removeByName("Disabled");
@@ -434,9 +429,9 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                     GridField::create(
                         "Children",
                         "",
-                        Category::get()->filter("ParentID", $this->ID)
+                        CatalogueCategory::get()->filter("ParentID", $this->ID)
                     )->setConfig($child_config = new GridFieldConfig_Catalogue(
-                        Category::class,
+                        CatalogueCategory::class,
                         null,
                         "Sort"
                     ))
@@ -446,14 +441,16 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
                 if ($child_edit) {
                     $self = $this; // PHP 5.3 support - $this can't be used in closures
-                    $child_edit->setItemEditFormCallback(function ($form, $itemRequest) use ($self) {
-                        $record = $form->getRecord();
+                    $child_edit->setItemEditFormCallback(
+                        function ($form, $itemRequest) use ($self) {
+                            $record = $form->getRecord();
 
-                        if (!$record->ID) {
-                            $parent_field = $form->Fields()->dataFieldByName("ParentID");
-                            $parent_field->setValue($self->ID);
+                            if (!$record->ID) {
+                                $parent_field = $form->Fields()->dataFieldByName("ParentID");
+                                $parent_field->setValue($self->ID);
+                            }
                         }
-                    });
+                    );
                 }
 
                 // Add related products
@@ -464,10 +461,22 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                         "",
                         $this->Products()
                     )->setConfig(new GridFieldConfig_CatalogueRelated(
-                        Product::class,
+                        CatalogueProduct::class,
                         null,
                         "SortOrder"
                     ))
+                );
+
+                $parent_field = TreeDropdownField::create(
+                    "ParentID",
+                    _t("CatalogueAdmin.ParentCategory", "Parent Category"),
+                    CatalogueCategory::class
+                )->setLabelField("Title")
+                ->setKeyField("ID");
+            } else {
+                $parent_field = HiddenField::create(
+                    "ParentID",
+                    _t("CatalogueAdmin.ParentCategory", "Parent Category")
                 );
             }
 
@@ -476,21 +485,11 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                 DropdownField::create(
                     "ClassName",
                     _t("CatalogueAdmin.CategoryType", "Type of Category"),
-                    $category_types
+                    $category_classes
                 )
             );
 
-            if ($this->exists()) {
-                $fields->addFieldToTab(
-                    "Root.Settings",
-                    TreeDropdownField::create(
-                        "ParentID",
-                        _t("CatalogueAdmin.ParentCategory", "Parent Category"),
-                        CatalogueCategory::class
-                    )->setLabelField("Title")
-                    ->setKeyField("ID")
-                );
-            }
+            $fields->addFieldToTab("Root.Settings", $parent_field);
         });
 
         return parent::getCMSFields();
@@ -510,10 +509,12 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     public function requireDefaultRecords()
     {
         parent::requireDefaultRecords();
-        
+        $class = $this->config()->default_subclass;
+        $categories = CatalogueCategory::get()->filter("ClassName", CatalogueCategory::class);
+
         // Alter any existing recods that might have the wrong classname
-        foreach (CatalogueCategory::get()->filter("ClassName", CatalogueCategory::class) as $category) {
-            $category->ClassName = "Category";
+        foreach ($categories as $category) {
+            $category->ClassName = $class;
             $category->write();
         }
     }
