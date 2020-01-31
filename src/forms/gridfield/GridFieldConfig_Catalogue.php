@@ -2,25 +2,25 @@
 
 namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
+use Colymba\BulkManager\BulkAction\UnlinkHandler;
+use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldButtonRow;
-use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
-use SilverStripe\Forms\GridField\GridFieldSortableHeader;
-use SilverStripe\Forms\GridField\GridFieldFilterHeader;
-use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\Forms\GridField\GridFieldEditButton;
-use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldPageCount;
-use SilverStripe\Forms\GridField\GridFieldExportButton;
-use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
-use Colymba\BulkManager\BulkManager as GridFieldBulkManager;
-use Colymba\BulkManager\BulkAction\UnlinkHandler;
-use SilverCommerce\CatalogueAdmin\BulkManager\DisableHandler;
-use SilverCommerce\CatalogueAdmin\BulkManager\EnableHandler;
-use SilverCommerce\CatalogueAdmin\Helpers\Helper;
-use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
-use Symbiote\GridFieldExtensions\GridFieldConfigurablePaginator;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
+use SilverStripe\Forms\GridField\GridFieldEditButton;
+use SilverStripe\Forms\GridField\GridField_ActionMenu;
+use SilverStripe\Forms\GridField\GridFieldDataColumns;
+use SilverStripe\Forms\GridField\GridFieldDeleteAction;
+use SilverStripe\Forms\GridField\GridFieldExportButton;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
+use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
+use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use SilverStripe\Forms\GridField\GridFieldSortableHeader;
+use Colymba\BulkManager\BulkManager as GridFieldBulkManager;
+use SilverCommerce\CatalogueAdmin\BulkManager\EnableHandler;
+use SilverCommerce\CatalogueAdmin\BulkManager\DisableHandler;
+use Symbiote\GridFieldExtensions\GridFieldConfigurablePaginator;
 
 /**
  * Allows editing of records contained within the GridField, instead of only allowing the ability to view records in
@@ -49,6 +49,7 @@ class GridFieldConfig_Catalogue extends GridFieldConfig
         $this->addComponent(new GridFieldDataColumns());
         $this->addComponent(new GridFieldEditButton());
         $this->addComponent(new GridFieldDeleteAction());
+        $this->addComponent(new GridField_ActionMenu());
         $this->addComponent(new GridFieldPageCount('toolbar-header-right'));
         $this->addComponent($pagination = new GridFieldConfigurablePaginator($itemsPerPage));
         $this->addComponent(new GridFieldExportButton("buttons-before-right"));
