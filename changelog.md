@@ -37,3 +37,7 @@
 * Fix issue where sub categories are not automatically linked to parents
 * Update gridfields to use action menus
 * Remove custom item request class for existing categories
+
+## 1.2.1
+
+* made export_fields multidimensional on CatalogueProduct
