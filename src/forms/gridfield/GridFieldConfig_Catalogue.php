@@ -2,6 +2,7 @@
 
 namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
+use Colymba\BulkManager\BulkAction\EditHandler;
 use Colymba\BulkManager\BulkAction\UnlinkHandler;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use SilverStripe\Forms\GridField\GridFieldConfig;
@@ -20,6 +21,7 @@ use SilverStripe\Forms\GridField\GridFieldSortableHeader;
 use Colymba\BulkManager\BulkManager as GridFieldBulkManager;
 use SilverCommerce\CatalogueAdmin\BulkManager\EnableHandler;
 use SilverCommerce\CatalogueAdmin\BulkManager\DisableHandler;
+use SilverCommerce\CatalogueAdmin\BulkManager\ProductEditHandler;
 use Symbiote\GridFieldExtensions\GridFieldConfigurablePaginator;
 
 /**
@@ -57,6 +59,8 @@ class GridFieldConfig_Catalogue extends GridFieldConfig
         // Setup Bulk manager
         $manager = new GridFieldBulkManager();
         $manager->removeBulkAction(UnlinkHandler::class);
+        $manager->removeBulkAction(EditHandler::class);
+        $manager->addBulkAction(ProductEditHandler::class);
         $manager->addBulkAction(DisableHandler::class);
         $manager->addBulkAction(EnableHandler::class);
         $this->addComponent($manager);

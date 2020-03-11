@@ -41,3 +41,7 @@
 ## 1.2.1
 
 * made export_fields multidimensional on CatalogueProduct
+
+## 1.2.2
+
+* Fix error causing categories to become unlinked when bulk edited
