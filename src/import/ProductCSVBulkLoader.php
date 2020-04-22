@@ -74,6 +74,13 @@ class ProductCSVBulkLoader extends CsvBulkLoader
     {
         $this->extend("onBeforeProcess", $record, $columnMap, $results, $preview);
 
+        // If classname is set, ensure we use it (as by default all objects are created as CatalogueProduct)
+        $curr_class = null;
+        if (isset($record['ClassName']) && class_exists($record['ClassName'])) {
+            $curr_class = $this->objectClass;
+            $this->objectClass = $record['ClassName'];
+        }
+
         $objID = parent::processRecord($record, $columnMap, $results, $preview);
         $object = DataObject::get_by_id($this->objectClass, $objID);
         
@@ -81,6 +88,11 @@ class ProductCSVBulkLoader extends CsvBulkLoader
 
         $object->destroy();
         unset($object);
+
+        // Reset default object class
+        if (!empty($curr_class)) {
+            $this->objectClass = $curr_class;
+        }
 
         return $objID;
     }
