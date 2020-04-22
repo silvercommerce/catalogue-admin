@@ -13,7 +13,7 @@ use SilverStripe\ORM\DataExtension;
  */
 class ImageExtension extends DataExtension
 {
-    private static $belongs_many_many = array(
+    private static $belongs_many_many = [
         'Products'      => Product::class
-    );
+    ];
 }

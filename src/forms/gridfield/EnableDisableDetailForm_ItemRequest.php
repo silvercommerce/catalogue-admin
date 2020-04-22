@@ -17,11 +17,11 @@ use SilverStripe\Forms\FormAction;
 class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
 {
 
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         'edit',
         'view',
         'ItemEditForm'
-    );
+    ];
 
     public function ItemEditForm()
     {

@@ -457,7 +457,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
      */
     public function Breadcrumbs($maxDepth = 20)
     {
-        $items = array();
+        $items = [];
         
         $ancestors = $this->getAncestors(true);
 
@@ -471,9 +471,9 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
 
         $template = new SSViewer('BreadcrumbsTemplate');
 
-        return $template->process($this->customise(ArrayData::create(array(
+        return $template->process($this->customise(ArrayData::create([
             'Pages' => ArrayList::create(array_reverse($items))
-        ))));
+        ])));
     }
 
     public function getCMSThumbnail()
@@ -590,7 +590,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
 
                 // Get a list of available product classes
                 $classnames = array_values(ClassInfo::subclassesFor(Product::class));
-                $product_types = array();
+                $product_types = [];
 
                 foreach ($classnames as $classname) {
                     $instance = singleton($classname);
@@ -837,7 +837,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     public function Level($level)
     {
         $parent = $this;
-        $stack = array($parent);
+        $stack = [$parent];
         while (($parent = $parent->Parent()) && $parent->exists()) {
             array_unshift($stack, $parent);
         }

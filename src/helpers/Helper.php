@@ -82,7 +82,7 @@ class Helper extends ViewableData
         $classes = ClassInfo::ancestry($classname);
         $classes = array_reverse($classes);
         $remove_classes = self::config()->classes_to_remove;
-        $return = array();
+        $return = [];
 
         array_push($classes, "Catalogue", "Page");
 
@@ -117,10 +117,10 @@ class Helper extends ViewableData
                 $curr_file
             );
 
-            $config = array(
+            $config = [
                 'conflict' => AssetStore::CONFLICT_OVERWRITE,
                 'visibility' => AssetStore::VISIBILITY_PUBLIC
-            );
+            ];
             
             $image = Injector::inst()->create(Image::class);
             $image->setFromLocalFile(

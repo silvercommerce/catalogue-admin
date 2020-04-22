@@ -332,11 +332,11 @@ class CatalogueCategory extends DataObject implements PermissionProvider
         $template = SSViewer::create('BreadcrumbsTemplate');
 
         
-        return $template->process($this->customise(new ArrayData(array(
+        return $template->process($this->customise(ArrayData::create([
             "Pages" => $pages,
             "Unlinked" => $unlinked,
             "Delimiter" => $delimiter,
-        ))));
+        ])));
     }
 
     /**
@@ -346,7 +346,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     public function Level($level)
     {
         $parent = $this;
-        $stack = array($parent);
+        $stack = [$parent];
         while ($parent = $parent->Parent) {
             array_unshift($stack, $parent);
         }
@@ -387,10 +387,10 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     {
         return $this
             ->EnabledProducts()
-            ->Sort(array(
+            ->Sort([
                 "SortOrder" => "ASC",
                 "Title" => "ASC"
-            ));
+            ]);
     }
 
     /**
@@ -403,20 +403,20 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     {
         // Setup the default sort for our products
         if (count($sort) == 0) {
-            $sort = array(
+            $sort = [
                 "SortOrder" => "ASC",
                 "Title" => "ASC"
-            );
+            ];
         }
         
-        $ids = array($this->ID);
+        $ids = [$this->ID];
         $ids = array_merge($ids, $this->getDescendantIDList());
 
         $products = CatalogueProduct::get()
-            ->filter(array(
+            ->filter([
                 "Categories.ID" => $ids,
                 "Disabled" => 0
-            ))->sort($sort);
+            ])->sort($sort);
 
         return $products;
     }

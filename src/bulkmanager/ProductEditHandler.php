@@ -18,11 +18,11 @@ class ProductEditHandler extends EditHandler
      *
      * @var array
      */
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         'index',
         'bulkEditForm',
         'recordEditForm',
-    );
+    ];
 
     /**
      * @param GridField            $gridField
@@ -77,10 +77,10 @@ class ProductEditHandler extends EditHandler
         $headerText = _t(
             'GRIDFIELD_BULKMANAGER_EDIT_HANDLER.HEADER_TEXT',
             'Editing {count} {class}',
-            array(
+            [
                 'count' => $editingCount,
                 'class' => $titleModelClass,
-            )
+            ]
         );
         $header = LiteralField::create(
             'bulkEditHeader',
@@ -205,7 +205,7 @@ class ProductEditHandler extends EditHandler
 
         // get all dataFields or just the ones allowed in config
         if ($editableFields) {
-            $dataFields = array();
+            $dataFields = [];
 
             foreach ($editableFields as $fieldName) {
                 $dataFields[$fieldName] = $fields->dataFieldByName($fieldName);
