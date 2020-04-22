@@ -45,3 +45,8 @@
 ## 1.2.2
 
 * Fix error causing categories to become unlinked when bulk edited
+
+## 1.3.0
+
+* Add better hierarchical support for importing categorys
+* Simplify and improve product import/export process
