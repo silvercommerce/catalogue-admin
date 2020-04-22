@@ -4,7 +4,6 @@ namespace SilverCommerce\CatalogueAdmin\Model;
 
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\SSViewer;
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\View\ArrayData;
 use SilverStripe\Security\Member;
@@ -234,42 +233,61 @@ class CatalogueCategory extends DataObject implements PermissionProvider
         }
     }
 
+
+
     /**
-     * Find a category based on the provided hierarchy:
+     * Find and/or create categories based on the provided hierarchy:
      *
      * Eg: Department/Sub Department/Sub Sub Department
      *
+     * This method will go through and find, or create categories in the above structure and
+     * return an ArrayList of all categories created
+     *
      * @param string $hierarchy A list of departments and sub departments, seperated by a forward slash
      *
-     * @return CatalogueCategory | null
+     * @return ArrayList
      */
-    public static function getFromHierarchy($hierarchy)
+    public static function findOrMakeHierarchy($hierarchy)
     {
         $sep = self::config()->hierarchy_seperator;
         $items = explode($sep, $hierarchy);
+        $list = ArrayList::create();
 
-        // loop though each item and get the relevent child
-        $top_item = CatalogueCategory::get()
-            ->filter("Title", $items[0])
-            ->first();
-        $next_item = null;
-
-        for ($x = 1; $x < count($items); $x++) {
-            if ($top_item) {
-                $next_item = $top_item
-                    ->Children()
-                    ->filter("Title", $items[$x])
-                    ->first();
-
-                if ($next_item) {
-                    $top_item = $next_item;
-                } else {
-                    break;
-                }
-            }
+        if (count($items) == 0) {
+            return $list;
         }
 
-        return $top_item;
+        $top_item = self::findOrMake($items[0]);
+        $list->add($top_item);
+
+        for ($x = 1; $x < count($items); $x++) {
+            $next_item = self::findOrMake($items[$x], $top_item->ID, $top_item->Children());
+            $top_item = $next_item;
+            $list->add($top_item);
+        }
+
+        return $list;
+    }
+
+    /**
+     * Find or create a category with the provided info
+     *
+     * @param string $title
+     * @param int $title
+     * @param SS_List $title
+     */
+    protected static function findOrMake(string $title, int $parent_id = 0, $list = null)
+    {
+        $list = (empty($list)) ? CatalogueCategory::get() : $list;
+        $item = $list->find("Title", $title);
+
+        if (empty($item)) {
+            $item = CatalogueCategory::create(['Title' => $title]);
+            $item->ParentID = $parent_id;
+            $item->write();
+        }
+
+        return $item;
     }
 
     /**
