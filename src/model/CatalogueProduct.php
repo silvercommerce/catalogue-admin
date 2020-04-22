@@ -138,18 +138,20 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     ];
 
     private static $export_fields = [
-        "ID"    =>  "ID",
-        "StockID"   =>  "StockID",
-        "ClassName" =>  "ClassName",
-        "Title" =>  "Title",
-        "Content"   =>  "Content",
-        "BasePrice" =>  "BasePrice",
-        "TaxRate"   =>  "TaxRate",
-        "CategoriesList"    =>  "CategoriesList",
-        "TagsList"  =>  "TagsList",
-        "ImagesList"    =>  "ImagesList",
-        "RelatedProductsList"   =>  "RelatedProductsList",
-        "Disabled"  =>  "Disabled"
+        "ID" => "ID",
+        "StockID" => "StockID",
+        "ClassName" => "ClassName",
+        "Title" => "Title",
+        "Content" => "Content",
+        "BasePrice" => "BasePrice",
+        "TaxRateID" => "TaxRateID",
+        "TaxCategoryID" => "TaxCategoryID",
+        "Weight" => "Weight",
+        "CategoriesList" => "CategoriesList",
+        "TagsList" => "TagsList",
+        "ImagesList" => "ImagesList",
+        "RelatedProductsList" => "RelatedProductsList",
+        "Disabled" => "Disabled"
     ];
 
     private static $field_labels = [

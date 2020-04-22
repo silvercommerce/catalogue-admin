@@ -5,8 +5,6 @@ namespace SilverCommerce\CatalogueAdmin\Import;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\CsvBulkLoader;
-use SilverStripe\SiteConfig\SiteConfig;
-use SilverCommerce\TaxAdmin\Model\TaxRate;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
@@ -19,36 +17,17 @@ use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
  */
 class ProductCSVBulkLoader extends CsvBulkLoader
 {
-    
     public $columnMap = [
-        "Product"       => "ClassName",
-        "ClassName"     => "ClassName",
-        "SKU"           => "StockID",
-        "Stock ID"      => "StockID",
-        "Name"          => "Title",
-        "Price"         => "BasePrice",
-        "TaxPercent"    => '->importTaxPercent',
-        "Tax Percent"   => '->importTaxPercent'
+        "CategoriesList"        => '->importCategoriesList',
+        "TagsList"              => '->importTagsList',
+        "ImagesList"            => '->importImagesList',
+        "RelatedProductsList"   => '->importRelatedProductsList'
     ];
 
     public $duplicateChecks = [
         'ID'        => 'ID',
-        'SKU'       => 'StockID',
-        'StockID'   => 'StockID',
-        'Stock ID'  => 'StockID'
+        'StockID'   => 'StockID'
     ];
-
-    public function __construct($objectClass = null)
-    {
-        if (class_exists(Product::class)) {
-            if (!$objectClass || $objectClass == CatalogueProduct::class) {
-                $objectClass = Product::class;
-                $this->objectClass = Product::class;
-            }
-        }
-
-        parent::__construct($objectClass);
-    }
 
     /**
      * Generate the selected relation from the provided array of values
@@ -62,7 +41,7 @@ class ProductCSVBulkLoader extends CsvBulkLoader
      *
      * @return void
      */
-    protected function createRelationFromList(
+    protected static function createRelationFromList(
         $object,
         $relation,
         $list,
@@ -93,93 +72,65 @@ class ProductCSVBulkLoader extends CsvBulkLoader
 
     public function processRecord($record, $columnMap, &$results, $preview = false)
     {
+        $this->extend("onBeforeProcess", $record, $columnMap, $results, $preview);
 
-        // Get Current Object
         $objID = parent::processRecord($record, $columnMap, $results, $preview);
         $object = DataObject::get_by_id($this->objectClass, $objID);
-
-        $this->extend("onBeforeProcess", $object, $record, $columnMap, $results, $preview);
         
-        if ($object != null) {
-            // Loop through all fields and setup associations
-            foreach ($record as $key => $value) {
-                // Find and add any categories imported
-                if ($key == 'Categories' && !empty($value)) {
-                    $object->Categories()->removeAll();
-                    $categories = explode(",", $value);
+        $this->extend("onAfterProcess", $object, $record, $columnMap, $results, $preview);
 
-                    foreach ($categories as $cat_name) {
-                        $cat_name = trim($cat_name);
-
-                        if (!empty($cat_name)) {
-                            $cat = CatalogueCategory::getFromHierarchy($cat_name);
-
-                            if (empty($cat)) {
-                                $cat = CatalogueCategory::create();
-                                $cat->Title = $cat_name;
-                                $cat->write();
-                            }
-
-                            $object->Categories()->add($cat);
-                        }
-                    }
-                }
-
-                // Find and add any tags imported
-                if ($key == 'Tags' && !empty($value)) {
-                    $this->createRelationFromList(
-                        $object,
-                        'Tags',
-                        explode(",", $value),
-                        ProductTag::class,
-                        'Title',
-                        true
-                    );
-                }
-
-                // Find and add any images to be imported
-                if ($key == 'Images' && !empty($value)) {
-                    $this->createRelationFromList(
-                        $object,
-                        'Images',
-                        explode(",", $value),
-                        Image::class,
-                        'Name'
-                    );
-                }
-
-                // Find and add any related products to be imported
-                if ($key == 'RelatedProducts' && !empty($value)) {
-                    $this->createRelationFromList(
-                        $object,
-                        'RelatedProducts',
-                        explode(",", $value),
-                        CatalogueProduct::class,
-                        'StockID'
-                    );
-                }
-            }
-
-            $this->extend("onAfterProcess", $object, $record, $columnMap, $results, $preview);
-
-            $object->destroy();
-            unset($object);
-        }
+        $object->destroy();
+        unset($object);
 
         return $objID;
     }
 
-    public static function importTaxPercent(&$obj, $val, $record)
+    public static function importCategoriesList(&$obj, $val, $record)
     {
-        $config = SiteConfig::current_site_config();
+        $obj->Categories()->removeAll();
+        $categories = explode(",", $val);
 
-        $tax = $config
-            ->TaxCategories()
-            ->filter("Rates.Rate", $val)
-            ->first();
-        
-        if ($tax) {
-            $obj->TaxCategoryID = $tax->ID;
+        foreach ($categories as $cat_name) {
+            $cat_name = trim($cat_name);
+
+            if (!empty($cat_name)) {
+                $cat = CatalogueCategory::findOrMakeHierarchy($cat_name)->last();
+                $obj->Categories()->add($cat);
+            }
         }
+    }
+
+    public static function importTagsList(&$obj, $val, $record)
+    {
+        self::createRelationFromList(
+            $obj,
+            'Tags',
+            explode(",", $val),
+            ProductTag::class,
+            'Title',
+            true
+        );
+    }
+
+    public static function importImagesList(&$obj, $val, $record)
+    {
+        self::createRelationFromList(
+            $obj,
+            'Images',
+            explode(",", $val),
+            Image::class,
+            'Name'
+        );
+    }
+
+    public static function importRelatedProductsList(&$obj, $val, $record)
+    {
+        self::createRelationFromList(
+            $obj,
+            'RelatedProducts',
+            explode(",", $val),
+            CatalogueProduct::class,
+            'StockID'
+        );
     }
 }
