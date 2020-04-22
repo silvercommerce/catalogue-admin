@@ -58,6 +58,20 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
      * @config
      */
     private static $auto_stock_id = true;
+
+    /**
+     * Human-readable singular name.
+     * @var string
+     * @config
+     */
+    private static $singular_name = 'Product';
+
+    /**
+     * Human-readable plural name
+     * @var string
+     * @config
+     */
+    private static $plural_name = 'Products';
     
     /**
      * Description for this object that will get loaded by the website

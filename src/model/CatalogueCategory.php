@@ -38,6 +38,20 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     private static $table_name = 'CatalogueCategory';
 
     /**
+     * Human-readable singular name.
+     * @var string
+     * @config
+     */
+    private static $singular_name = 'Category';
+
+    /**
+     * Human-readable plural name
+     * @var string
+     * @config
+     */
+    private static $plural_name = 'Categories';
+
+    /**
      * Description for this object that will get loaded by the website
      * when it comes to creating it for the first time.
      *
