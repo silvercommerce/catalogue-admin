@@ -1,0 +1,12 @@
+SilverCommerce\CatalogueAdmin\Model\CatalogueCategory:
+  nested_top:
+    Title: "Nested Top"
+  nested_two:
+    Title: "Nested Two"
+    Parent: =>SilverCommerce\CatalogueAdmin\Model\CatalogueCategory.nested_top
+  nested_three:
+    Title: "Nested Three"
+    Parent: =>SilverCommerce\CatalogueAdmin\Model\CatalogueCategory.nested_top
+  nested_four:
+    Title: "Nested Four"
+    Parent: =>SilverCommerce\CatalogueAdmin\Model\CatalogueCategory.nested_two
