@@ -50,3 +50,5 @@
 
 * Add better hierarchical support for importing categorys
 * Simplify and improve product import/export process
+* Simplify CatalogueAdmin
+* Update to use `getExportFields` on CatalogueAdmin Products
