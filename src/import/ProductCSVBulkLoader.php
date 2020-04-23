@@ -86,8 +86,10 @@ class ProductCSVBulkLoader extends CsvBulkLoader
         
         $this->extend("onAfterProcess", $object, $record, $columnMap, $results, $preview);
 
-        $object->destroy();
-        unset($object);
+        if (!empty($object)) {
+            $object->destroy();
+            unset($object);
+        }
 
         // Reset default object class
         if (!empty($curr_class)) {
