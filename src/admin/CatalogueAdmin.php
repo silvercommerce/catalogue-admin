@@ -56,6 +56,21 @@ class CatalogueAdmin extends ModelAdminPlus
     ];
 
     /**
+     * Listen for customised export fields on the currently managed object
+     *
+     * @return array
+     */
+    public function getExportFields()
+    {
+        $model = singleton($this->modelClass);
+        if ($model->hasMethod('getExportFields')) {
+            return $model->getExportFields();
+        }
+
+        return parent::getExportFields();
+    }
+
+    /**
      * Is the current managed model a category?
      *
      * @return boolean
@@ -127,30 +142,26 @@ class CatalogueAdmin extends ModelAdminPlus
         $form = parent::getEditForm($id, $fields);
         $fields = $form->Fields();
         $import_button = null;
-        $add_import = false;
         $grid = $fields
             ->fieldByName($this->sanitiseClassName($this->modelClass));
 
-        $export_button = new GridFieldExportButton('buttons-before-right');
-        $export_button->setExportColumns($this->getExportFields());
-
-        if ($this->showImportForm) {
-            $import_button = GridFieldImportButton::create('buttons-before-right')
-                ->setImportForm($this->ImportForm())
-                ->setModalTitle(
-                    _t(
-                        'SilverStripe\\Admin\\ModelAdmin.IMPORT',
-                        'Import from CSV'
-                    )
-                );
-        }
-
         if ($this->isProduct()) {
+            $export_button = $grid->getConfig()->getComponentByType(GridFieldExportButton::class);
+            $export_button->setExportColumns($this->getExportFields());
+
+            $import_button = $grid->getConfig()->getComponentByType(GridFieldImportButton::class);
+
             $grid->setConfig(GridFieldConfig_Catalogue::create(
                 $this->modelClass,
                 $this->config()->product_page_length
             ));
-            $add_import = true;
+
+            $grid
+                ->getConfig()
+                ->removeComponentsByType(GridFieldExportButton::class)
+                ->addComponents(new GridFieldPrintButton('buttons-before-left'))
+                ->addComponent($import_button)
+                ->addComponent($export_button);
         }
         
         if ($this->isCategory()) {
@@ -159,25 +170,16 @@ class CatalogueAdmin extends ModelAdminPlus
                 $this->config()->category_page_length,
                 "Sort"
             ));
-            $add_import = true;
+            $grid
+                ->getConfig()
+                ->removeComponentsByType(GridFieldExportButton::class);
         }
 
         if ($this->isTag()) {
             $grid
                 ->getConfig()
-                ->removeComponentsByType(GridFieldPrintButton::class)
+                ->removeComponentsByType(GridFieldImportButton::class)
                 ->addComponent(GridFieldOrderableRows::create());
-        }
-
-        $config = $grid->getConfig();
-
-        $config
-            ->removeComponentsByType(GridFieldExportButton::class)
-            ->addComponents(new GridFieldPrintButton('buttons-before-right'))
-            ->addComponent($export_button);
-
-        if ($add_import && $import_button) {
-            $config->addComponent($import_button);
         }
 
         $this->extend("updateEditForm", $form);

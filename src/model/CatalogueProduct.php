@@ -138,20 +138,20 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     ];
 
     private static $export_fields = [
-        "ID" => "ID",
-        "StockID" => "StockID",
-        "ClassName" => "ClassName",
-        "Title" => "Title",
-        "Content" => "Content",
-        "BasePrice" => "BasePrice",
-        "TaxRateID" => "TaxRateID",
-        "TaxCategoryID" => "TaxCategoryID",
-        "Weight" => "Weight",
-        "CategoriesList" => "CategoriesList",
-        "TagsList" => "TagsList",
-        "ImagesList" => "ImagesList",
-        "RelatedProductsList" => "RelatedProductsList",
-        "Disabled" => "Disabled"
+        "ID",
+        "StockID",
+        "ClassName",
+        "Title",
+        "Content",
+        "BasePrice",
+        "TaxRateID",
+        "TaxCategoryID",
+        "Weight",
+        "CategoriesList",
+        "TagsList",
+        "ImagesList",
+        "RelatedProductsList",
+        "Disabled"
     ];
 
     private static $field_labels = [
@@ -173,6 +173,34 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     private static $default_sort = [
         "Title" => "ASC"
     ];
+
+    /**
+     * Get the default export fields for this object
+     *
+     * @return array
+     */
+    public function getExportFields()
+    {
+        $rawFields = $this->config()->get('export_fields');
+
+        // Merge associative / numeric keys
+        $fields = [];
+        foreach ($rawFields as $key => $value) {
+            if (is_int($key)) {
+                $key = $value;
+            }
+            $fields[$key] = $value;
+        }
+
+        $this->extend("updateExportFields", $fields);
+
+        // Final fail-over, just list ID field
+        if (!$fields) {
+            $fields['ID'] = 'ID';
+        }
+
+        return $fields;
+    }
 
     public function getBasePrice()
     {
