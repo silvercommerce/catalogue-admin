@@ -55,3 +55,7 @@
 
 * Simplify CatalogueAdmin
 * Update to use `getExportFields` on CatalogueAdmin Products
+
+## 1.3.2
+
+* Fix unit tests

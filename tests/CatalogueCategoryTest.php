@@ -17,7 +17,7 @@ class CatalogueCategoryTest extends SapphireTest
 
         $this->assertEquals('Nested Top', $top->getFullHierarchy());
         $this->assertEquals('Nested Top/Nested Two', $two->getFullHierarchy());
-        $this->assertEquals('Nested Top/Nested Two/Tested Four', $four->getFullHierarchy());
+        $this->assertEquals('Nested Top/Nested Two/Nested Four', $four->getFullHierarchy());
     }
 
     public function testGetHierarchy()
@@ -27,8 +27,8 @@ class CatalogueCategoryTest extends SapphireTest
         $four = $this->objFromFixture(CatalogueCategory::class, 'nested_four');
 
         $this->assertEquals('', $top->getHierarchy());
-        $this->assertEquals('Nested Two', $two->getHierarchy());
-        $this->assertEquals('Nested Two/Tested Four', $four->getHierarchy());
+        $this->assertEquals('Nested Top', $two->getHierarchy());
+        $this->assertEquals('Nested Top/Nested Two', $four->getHierarchy());
     }
 
     public function testFindOrMakeHierarchy()
