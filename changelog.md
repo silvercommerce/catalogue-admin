@@ -59,3 +59,7 @@
 ## 1.3.2
 
 * Fix unit tests
+
+## 1.3.3
+
+* Simplify find or make query and fix issue that can occure when accessing `Children`
