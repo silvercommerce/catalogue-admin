@@ -275,7 +275,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
         $list->add($top_item);
 
         for ($x = 1; $x < count($items); $x++) {
-            $next_item = self::findOrMake($items[$x], $top_item->ID, $top_item->Children());
+            $next_item = self::findOrMake($items[$x], $top_item->ID, true);
             $top_item = $next_item;
             $list->add($top_item);
         }
@@ -286,14 +286,18 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     /**
      * Find or create a category with the provided info
      *
-     * @param string $title
-     * @param int $title
-     * @param SS_List $title
+     * @param string $title The name of the category
+     * @param int $parent_id The ID of the parent category
+     * @param boolean $use_children When finding from a list, use the parent ID
      */
-    protected static function findOrMake(string $title, int $parent_id = 0, $list = null)
+    protected static function findOrMake(string $title, $parent_id = 0, $use_children = false)
     {
-        $list = (empty($list)) ? CatalogueCategory::get() : $list;
-        $item = $list->find("Title", $title);
+        $list = CatalogueCategory::get();
+        $filter = ['Title' => $title];
+        if ($use_children) {
+            $filter['ParentID'] = $parent_id;
+        }
+        $item = $list->filter($filter)->first();
 
         if (empty($item)) {
             $item = CatalogueCategory::create(['Title' => $title]);
