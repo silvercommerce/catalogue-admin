@@ -39,11 +39,12 @@ class Helper extends ViewableData
     /**
      * Generate an array of classes that can be loaded into a "ClassName" dropdown
      *
-     * @param string $base_classname Classname of object we will get list for
+     * @param string $base_classname Classname of object we will get list for,
+     * @param bool   $include_base Include the base classname in the returned list
      *
      * @return array
      */
-    public static function getCreatableClasses($base_classname)
+    public static function getCreatableClasses($base_classname, $include_base = false)
     {
         // Get a list of available product classes
         $instance = singleton($base_classname);
@@ -51,24 +52,40 @@ class Helper extends ViewableData
         $return = [];
 
         foreach ($classnames as $classname) {
-            // Remove the base level class from the loop
-            if ($classname == $base_classname) {
+            // Remove the base level class from the loop (if we don't want to include it)
+            if (!$include_base && $classname == $base_classname) {
                 continue;
             }
 
-            $instance = singleton($classname);
-            $description = Config::inst()->get($classname, 'description');
-
-            if (!empty($description)) {
-                $description = $instance->i18n_singular_name() . ': ' . $description;
-            } else {
-                $description = $instance->i18n_singular_name();
-            }
-
-            $return[$classname] = $description;
+            $return[$classname] = self::getProductDescription($classname);
         }
 
         return $return;
+    }
+
+    /**
+     * Generate a product description based on the provided classname.
+     * 
+     * If the classes `description` config var is set, then will return the singular name and the description,
+     * else will return the singular name
+     *
+     * @param string $classname The classname to use
+     * @param string $seperator The seperator to use to join the string
+     *
+     * @return string
+     */
+    public static function getProductDescription(string $classname, string $seperator = ":")
+    {
+        $instance = singleton($classname);
+        $description = Config::inst()->get($classname, 'description');
+
+        if (!empty($description)) {
+            $description = $instance->i18n_singular_name() . $seperator . $description;
+        } else {
+            $description = $instance->i18n_singular_name();
+        }
+
+        return $description;
     }
 
     /**

@@ -63,3 +63,7 @@
 ## 1.3.3
 
 * Simplify find or make query and fix issue that can occure when accessing `Children`
+
+## 1.3.4
+
+* Allow adding of base classname to the create product dropdown

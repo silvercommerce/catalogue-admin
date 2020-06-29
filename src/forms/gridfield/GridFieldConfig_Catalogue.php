@@ -38,8 +38,9 @@ class GridFieldConfig_Catalogue extends GridFieldConfig
      * @param array $classname Name of class who's subclasses will be added to form
      * @param int $itemsPerPage - How many items per page should show up
      * @param boolean | string $sorting Allow sorting of rows, either false or the name of the sort column
+     * @param boolean $create_baseclass Allow adding of the baseclass to the multiclass dropdown 
      */
-    public function __construct($classname, $itemsPerPage = null, $sort_col = false)
+    public function __construct($classname, $itemsPerPage = null, $sort_col = false, $create_baseclass = false)
     {
         parent::__construct();
 
@@ -66,7 +67,7 @@ class GridFieldConfig_Catalogue extends GridFieldConfig
         $this->addComponent($manager);
 
         // Setup add new button
-        $subclasses = Helper::getCreatableClasses($classname);
+        $subclasses = Helper::getCreatableClasses($classname, $create_baseclass);
         $add_button = new AddNewMultiClass("buttons-before-left");
         $add_button->setClasses($subclasses);
 
