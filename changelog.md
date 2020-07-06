@@ -67,3 +67,7 @@
 ## 1.3.4
 
 * Allow adding of base classname to the create product dropdown
+
+## 1.3.5
+
+* Improve bulk CSV importer to correctly set product type to correct classname

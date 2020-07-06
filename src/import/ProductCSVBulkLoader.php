@@ -32,7 +32,7 @@ class ProductCSVBulkLoader extends CsvBulkLoader
     /**
      * Generate the selected relation from the provided array of values
      *
-     * @param string $object   The current object being imported
+     * @param DataObject $object   The current object being imported
      * @param string $relation The name of the relation (eg Images)
      * @param array  $list     The list of values
      * @param string $class    The source class of the relation (eg SilverStripe\Assets\Image)
@@ -70,20 +70,37 @@ class ProductCSVBulkLoader extends CsvBulkLoader
         }
     }
 
+    /**
+     * @inheritdoc
+     *
+     * @param array $record
+     * @param array $columnMap
+     * @param BulkLoader_Result $results
+     * @param boolean $preview
+     *
+     * @return int
+     */
     public function processRecord($record, $columnMap, &$results, $preview = false)
     {
         $this->extend("onBeforeProcess", $record, $columnMap, $results, $preview);
 
-        // If classname is set, ensure we use it (as by default all objects are created as CatalogueProduct)
+        // If classname is set, ensure we either manually set the custom classname
+        // (for existing), or create a new object of the correct class and write it
+        // (as by default all objects are created as CatalogueProduct)
         $curr_class = null;
         if (isset($record['ClassName']) && class_exists($record['ClassName'])) {
             $curr_class = $this->objectClass;
             $this->objectClass = $record['ClassName'];
+            $existingObj = $this->findExistingObject($record, $columnMap);
+            /** @var DataObject $obj */
+            $obj = ($existingObj) ? $existingObj : $this->objectClass::create();
+            $obj->ClassName = $record['ClassName'];
+            $obj->write();
         }
 
         $objID = parent::processRecord($record, $columnMap, $results, $preview);
-        $object = DataObject::get_by_id($this->objectClass, $objID);
-        
+        $object = DataObject::get_by_id(CatalogueProduct::class, $objID);
+
         $this->extend("onAfterProcess", $object, $record, $columnMap, $results, $preview);
 
         if (!empty($object)) {
