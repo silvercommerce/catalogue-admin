@@ -13,6 +13,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Assets\Storage\AssetStore;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
+use SilverStripe\ORM\DB;
 
 /**
  * Simple helper class to provide common functions across
@@ -41,13 +42,13 @@ class Helper extends ViewableData
      *
      * @param string $base_classname Classname of object we will get list for,
      * @param bool   $include_base Include the base classname in the returned list
+     * @param bool   $escape Should classnames be escaped?
      *
      * @return array
      */
-    public static function getCreatableClasses($base_classname, $include_base = false)
+    public static function getCreatableClasses($base_classname, $include_base = false, $escape = false)
     {
         // Get a list of available product classes
-        $instance = singleton($base_classname);
         $classnames = ClassInfo::subclassesFor($base_classname);
         $return = [];
 
@@ -57,7 +58,8 @@ class Helper extends ViewableData
                 continue;
             }
 
-            $return[$classname] = self::getProductDescription($classname);
+            $key = ($escape) ? DB::get_conn()->escapeString($classname) : $classname;
+            $return[$key] = self::getProductDescription($classname);
         }
 
         return $return;

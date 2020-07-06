@@ -2,13 +2,11 @@
 
 namespace SilverCommerce\CatalogueAdmin\Model;
 
-use Product;
 use SilverStripe\ORM\DB;
 use SilverStripe\i18n\i18n;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\SSViewer;
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\View\ArrayData;
 use SilverStripe\Security\Member;
@@ -26,7 +24,6 @@ use SilverCommerce\TaxAdmin\Model\TaxRate;
 use SilverCommerce\TaxAdmin\Traits\Taxable;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\Forms\TreeMultiselectField;
-use SilverCommerce\TaxAdmin\PricingExtension;
 use SilverStripe\Security\PermissionProvider;
 use SilverCommerce\TaxAdmin\Model\TaxCategory;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
@@ -167,7 +164,8 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     private static $searchable_fields = [
         "Title",
         "Content",
-        "StockID"
+        "StockID",
+        "ClassName"
     ];
 
     private static $default_sort = [
@@ -341,7 +339,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     }
     
     /**
-     * Return the link for this {@link Product}
+     * Return the link for this {@link CatalogueProduct}
      *
      * @param string $action See {@link Link()}
      * @return string
@@ -582,6 +580,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
         
         return $title . "-" . $this->ID;
     }
+
     public function getCMSFields()
     {
         $self = $this;
@@ -616,21 +615,12 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
                     'Content'
                 );
 
-                // Get a list of available product classes
-                $classnames = array_values(ClassInfo::subclassesFor(Product::class));
-                $product_types = [];
-
-                foreach ($classnames as $classname) {
-                    $instance = singleton($classname);
-                    $product_types[$classname] = $instance->i18n_singular_name();
-                }
-
                 $fields->addFieldToTab(
                     "Root.Settings",
                     DropdownField::create(
                         "ClassName",
                         _t("CatalogueAdmin.ProductType", "Type of product"),
-                        $product_types
+                        Helper::getCreatableClasses(self::class)
                     )
                 );
 
@@ -700,7 +690,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
                 if (!empty($related_field)) {
                     $related_field->setConfig(
                         new GridFieldConfig_CatalogueRelated(
-                            Product::class,
+                            self::class,
                             null,
                             'SortOrder'
                         )
@@ -747,7 +737,30 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
             DB::alteration_message("Updated {$records->count()} Product records", 'obsolete');
         }
     }
-    
+
+    /**
+     * Overwrite default search fields to add an updated dropdown to classname
+     *
+     * Used by {@link SearchContext}.
+     *
+     * @param array $_params
+     *
+     * @return \SilverStripe\Forms\FieldList
+     */
+    public function scaffoldSearchFields($_params = null)
+    {
+        $fields = parent::scaffoldSearchFields($_params);
+
+        // Update the classname field if set
+        $classname = $fields->dataFieldByName('ClassName');
+
+        if (!empty($classname)) {
+            $classname->setSource(Helper::getCreatableClasses(CatalogueProduct::class, false, true));
+        }
+
+        return $fields;
+    }
+
     public function providePermissions()
     {
         return [

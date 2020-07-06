@@ -71,3 +71,8 @@
 ## 1.3.5
 
 * Improve bulk CSV importer to correctly set product type to correct classname
+
+## 1.3.6
+
+* Switch Product Classname field to use Helper
+* Allow filtering of products by ClassName/Type
