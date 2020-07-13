@@ -76,3 +76,7 @@
 
 * Switch Product Classname field to use Helper
 * Allow filtering of products by ClassName/Type
+
+## 1.3.7
+
+* Add Subsite ID to product export (if Subsites is installed)

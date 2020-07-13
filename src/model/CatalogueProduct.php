@@ -22,6 +22,7 @@ use SilverStripe\Forms\RequiredFields;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverCommerce\TaxAdmin\Model\TaxRate;
 use SilverCommerce\TaxAdmin\Traits\Taxable;
+use SilverStripe\Core\Manifest\ModuleLoader;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\Forms\TreeMultiselectField;
 use SilverStripe\Security\PermissionProvider;
@@ -188,6 +189,13 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
                 $key = $value;
             }
             $fields[$key] = $value;
+        }
+
+        // If subsite module installed, add as an export field
+        // (as duplicate stock ID's across sites can result in the wrong product being found)
+        $subsites_exists = ModuleLoader::inst()->getManifest()->moduleExists('silverstripe/subsites');
+        if ($subsites_exists && !in_array('SubsiteID', $fields)) {
+            $fields['SubsiteID'] = 'SubsiteID';
         }
 
         $this->extend("updateExportFields", $fields);
