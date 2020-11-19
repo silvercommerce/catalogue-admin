@@ -24,6 +24,14 @@
 
 * Improved adding of import button
 
+## 1.0.6
+
+* Fix importing of categories to use correct class
+
+## 1.0.7
+
+* Ensure that only enabled categories are used when finding a Product's parent
+
 ## 1.1.0
 
 * Switch to using `Taxable` for price/tax calculations
@@ -31,6 +39,10 @@
 ## 1.1.1
 
 * Ensure CMS field modifications only apply if the field exists
+
+## 1.1.2
+
+* Ensure that only enabled categories are used when finding a Product's parent
 
 ## 1.2.0
 
@@ -45,3 +57,7 @@
 ## 1.2.2
 
 * Fix error causing categories to become unlinked when bulk edited
+
+## 1.2.3
+
+* Ensure that only enabled categories are used when finding a Product's parent

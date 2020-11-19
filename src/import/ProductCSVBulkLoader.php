@@ -19,6 +19,12 @@ use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
  */
 class ProductCSVBulkLoader extends CsvBulkLoader
 {
+    /**
+     * Default category class all imported categories should be created as
+     *
+     * @var class
+     */
+    private static $default_category_classname = \Category::class;
     
     public $columnMap = [
         "Product"       => "ClassName",
@@ -115,8 +121,8 @@ class ProductCSVBulkLoader extends CsvBulkLoader
                             $cat = CatalogueCategory::getFromHierarchy($cat_name);
 
                             if (empty($cat)) {
-                                $cat = CatalogueCategory::create();
-                                $cat->Title = $cat_name;
+                                $categoryclass = $this->config()->get('default_category_classname');
+                                $cat = $categoryclass::create();;
                                 $cat->write();
                             }
 
