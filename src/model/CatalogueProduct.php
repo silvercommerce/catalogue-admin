@@ -334,7 +334,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     public function getAncestors($include_parent = false)
     {
         $ancestors = ArrayList::create();
-        $object    = $this->Categories()->first();
+        $object    = $this->Parent();
 
         if ($object) {
             if ($include_parent) {
