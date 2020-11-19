@@ -302,13 +302,13 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     }
 
     /**
-     * Shortcut for the first category assigned to this product
+     * Return a list of categories that have not been disabled
      *
-     * @return CaltalogueCategory
+     * @return DataList
      */
-    public function Parent()
+    public function getEnabledCategories()
     {
-        return $this->Categories()->first();
+        return $this->Categories()->exclude('Disabled', true);
     }
 
     /**
@@ -328,6 +328,16 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
             Director::baseURL(),
             $this->RelativeLink($action)
         );
+    }
+
+    /**
+     * Shortcut for the first enabled category assigned to this product
+     *
+     * @return CaltalogueCategory
+     */
+    public function Parent()
+    {
+        return $this->getEnabledCategories()->first();
     }
     
     /**
