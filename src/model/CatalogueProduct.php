@@ -344,6 +344,16 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     }
 
     /**
+     * Return a list of categories that have not been disabled
+     *
+     * @return DataList
+     */
+    public function getEnabledCategories()
+    {
+        return $this->Categories()->exclude('Disabled', true);
+    }
+
+    /**
 	 * Stub method to get the site config, unless the current class can provide an alternate.
 	 *
 	 * @return SiteConfig
@@ -378,13 +388,13 @@ class CatalogueProduct extends DataObject implements PermissionProvider
     }
 
     /**
-     * Shortcut for the first category assigned to this product
+     * Shortcut for the first enabled category assigned to this product
      *
      * @return CaltalogueCategory
      */
     public function Parent()
     {
-        return $this->Categories()->first();
+        return $this->getEnabledCategories()->first();
     }
     
     /**
