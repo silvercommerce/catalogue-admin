@@ -1,0 +1,8 @@
+mappings:
+  CatalogueAdmin: SilverCommerce\CatalogueAdmin\Admin\CatalogueAdmin
+  CatalogueCategory: SilverCommerce\CatalogueAdmin\Model\CatalogueCategory
+  CatalogueProduct: SilverCommerce\CatalogueAdmin\Model\CatalogueProduct
+  CatalogueEnableDisableDetailForm_ItemRequest: SilverCommerce\CatalogueAdmin\Forms\GridField\EnableDisableDetailForm_ItemRequest
+  CatalogueCategoryDetailForm_ItemRequest: SilverCommerce\CatalogueAdmin\Forms\GridField\EnableDisableDetailForm_ItemRequest
+  CatalogueHelper: SilverCommerce\CatalogueAdmin\Helpers\Helper
+  CatalogueProductCSVBulkLoader: SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader
