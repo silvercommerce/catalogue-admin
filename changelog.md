@@ -31,3 +31,7 @@
 ## 1.0.7
 
 * Ensure that only enabled categories are used when finding a Product's parent
+
+## 1.0.8
+
+* Add upgrade mappings from silverstripe-commerce
