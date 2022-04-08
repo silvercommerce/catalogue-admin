@@ -32,6 +32,10 @@
 
 * Ensure that only enabled categories are used when finding a Product's parent
 
+## 1.0.8
+
+* Add upgrade mappings from silverstripe-commerce
+
 ## 1.1.0
 
 * Switch to using `Taxable` for price/tax calculations
@@ -43,6 +47,10 @@
 ## 1.1.2
 
 * Ensure that only enabled categories are used when finding a Product's parent
+
+## 1.1.3
+
+* Add upgrade mappings from silverstripe-commerce
 
 ## 1.2.0
 
@@ -61,3 +69,7 @@
 ## 1.2.3
 
 * Ensure that only enabled categories are used when finding a Product's parent
+
+## 1.2.4
+
+* Add upgrade mappings from silverstripe-commerce
