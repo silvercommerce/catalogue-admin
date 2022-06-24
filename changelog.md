@@ -120,3 +120,5 @@
 ## 1.4.0
 
 * Add versioned Products and Categories by default
+* Re-arrange class structure
+* Switch to font icon for catalogue admin
