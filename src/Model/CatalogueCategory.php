@@ -20,6 +20,7 @@ use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use SilverStripe\Forms\HiddenField;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * Base class for all product categories stored in the database. The
@@ -95,7 +96,8 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     ];
 
     private static $extensions = [
-        Hierarchy::class
+        Hierarchy::class,
+        Versioned::class . '.versioned'
     ];
 
     private static $summary_fields = [

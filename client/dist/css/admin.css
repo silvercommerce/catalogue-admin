@@ -1,8 +1,0 @@
-#Menu-SilverCommerce-CatalogueAdmin-Admin-CatalogueAdmin .menu__icon:before {
-    background-image: url('../images/catalogue.png');
-    background-position: 0 0;
-    content: "";
-    width: 16px;
-    height: 16px;
-    display: block;
-}

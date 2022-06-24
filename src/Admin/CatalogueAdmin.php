@@ -45,6 +45,8 @@ class CatalogueAdmin extends ModelAdminPlus
 
     private static $menu_priority = 11;
 
+    private static $menu_icon_class = 'font-icon-p-shop';
+
     private static $managed_models = [
         CatalogueProduct::class,
         CatalogueCategory::class,

@@ -18,6 +18,7 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Security\Permission;
+use SilverStripe\Versioned\Versioned;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverCommerce\TaxAdmin\Model\TaxRate;
@@ -112,6 +113,10 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
 
     private static $owns = [
         "Images"
+    ];
+
+    private static $extensions = [
+        Versioned::class . '.versioned'
     ];
 
     private static $casting = [

@@ -116,3 +116,7 @@
 ## 1.3.9
 
 * Add upgrade mappings from silverstripe-commerce
+
+## 1.4.0
+
+* Add versioned Products and Categories by default

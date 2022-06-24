@@ -1,9 +1,6 @@
 ---
 Name: catalogueconfig
 ---
-SilverStripe\Admin\LeftAndMain:
-  extensions:
-    - SilverCommerce\CatalogueAdmin\Extensions\AdminExtension
 SilverStripe\SiteConfig\SiteConfig:
   extensions:
     - SilverCommerce\CatalogueAdmin\Extensions\SiteConfigExtension
