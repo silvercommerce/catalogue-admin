@@ -2,12 +2,13 @@
 
 namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
+use SilverStripe\Core\Convert;
+use SilverStripe\Dev\Deprecation;
+use SilverStripe\Forms\FormAction;
+use SilverStripe\Security\Security;
+use SilverStripe\Control\Controller;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
-use SilverStripe\Security\Security;
-use SilverStripe\Core\Convert;
-use SilverStripe\Control\Controller;
-use SilverStripe\Forms\FormAction;
 
 /**
  * Custom detailform for items that can vbe enabled and disabled
@@ -25,6 +26,8 @@ class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemReques
 
     public function ItemEditForm()
     {
+        Deprecation::notice('2.0', 'Disabled status has been enabled in favour of product versioning');
+
         $form = parent::ItemEditForm();
 
         if ($form && $this->record->ID !== 0 && $this->record->canEdit()) {
@@ -65,6 +68,8 @@ class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemReques
 
     public function doEnable($data, $form)
     {
+        Deprecation::notice('2.0', 'Disabled status has been enabled in favour of product versioning');
+
         $record = $this->record;
 
         if ($record && !$record->canEdit()) {
@@ -90,6 +95,8 @@ class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemReques
     
     public function doDisable($data, $form)
     {
+        Deprecation::notice('2.0', 'Disabled status has been enabled in favour of product versioning');
+
         $record = $this->record;
 
         if ($record && !$record->canEdit()) {

@@ -9,6 +9,7 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\SSViewer;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\View\ArrayData;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Security\Member;
 use SilverStripe\Control\Director;
 use SilverStripe\Forms\FieldGroup;
@@ -31,6 +32,7 @@ use SilverCommerce\TaxAdmin\Model\TaxCategory;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use Bummzack\SortableFile\Forms\SortableUploadField;
 use SilverCommerce\TaxAdmin\Interfaces\TaxableProvider;
+use SilverStripe\VersionedAdmin\Forms\HistoryViewerField;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
 
 /**
@@ -82,13 +84,13 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     private static $description = "A standard catalogue product";
     
     private static $db = [
-        "Title"             => "Varchar(255)",
-        "BasePrice"         => "Decimal(9,3)",
-        "StockID"           => "Varchar",
-        "Content"           => "HTMLText",
-        "ContentSummary"    => "Text",
-        "Weight"            => "Decimal",
-        "Disabled"          => "Boolean"
+        'Title'             => 'Varchar(255)',
+        'BasePrice'         => 'Decimal(9,3)',
+        'StockID'           => 'Varchar',
+        'Content'           => 'HTMLText',
+        'ContentSummary'    => 'Text',
+        'Weight'            => 'Decimal',
+        'Disabled'          => 'Boolean' // Now legacy, as switched to versioning
     ];
 
     private static $has_one = [
@@ -136,8 +138,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
         "NoTaxPrice",
         "TaxPercentage",
         "CategoriesList",
-        "TagsList",
-        "Disabled"
+        "TagsList"
     ];
 
     private static $export_fields = [
@@ -153,8 +154,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
         "CategoriesList",
         "TagsList",
         "ImagesList",
-        "RelatedProductsList",
-        "Disabled"
+        "RelatedProductsList"
     ];
 
     private static $field_labels = [
@@ -177,6 +177,44 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     private static $default_sort = [
         "Title" => "ASC"
     ];
+
+    /**
+     * Is this object enabled?
+     *
+     * @return Boolean
+     */
+    public function isEnabled()
+    {
+        Deprecation::notice('2.0', 'Disabled status discontinued, use versioning/published instead');
+
+        return ($this->Disabled) ? false : true;
+    }
+    
+    /**
+     * Is this object disabled?
+     *
+     * @return Boolean
+     */
+    public function isDisabled()
+    {
+        Deprecation::notice('2.0', 'Disabled status discontinued, use versioning/published instead');
+
+        return $this->Disabled;
+    }
+
+    /**
+     * Return a list of categories that have not been disabled
+     *
+     * @return DataList
+     */
+    public function getEnabledCategories()
+    {
+        Deprecation::notice('2.0', 'Disabled status discontinued, use versioning/published instead');
+
+        return $this
+            ->Categories()
+            ->exclude('Disabled', true);
+    }
 
     /**
      * Get the default export fields for this object
@@ -216,26 +254,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     public function getBasePrice()
     {
         return $this->dbObject('BasePrice')->getValue();
-    }
-    
-    /**
-     * Is this object enabled?
-     *
-     * @return Boolean
-     */
-    public function isEnabled()
-    {
-        return ($this->Disabled) ? false : true;
-    }
-    
-    /**
-     * Is this object disabled?
-     *
-     * @return Boolean
-     */
-    public function isDisabled()
-    {
-        return $this->Disabled;
     }
 
     /**
@@ -307,16 +325,6 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     }
 
     /**
-     * Return a list of categories that have not been disabled
-     *
-     * @return DataList
-     */
-    public function getEnabledCategories()
-    {
-        return $this->Categories()->exclude('Disabled', true);
-    }
-
-    /**
      * Return the link for this {@link SimpleProduct} object, with the
      * {@link Director::baseURL()} included.
      *
@@ -342,9 +350,11 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
      */
     public function Parent()
     {
-        return $this->getEnabledCategories()->first();
+        return $this
+            ->Categories()
+            ->first();
     }
-    
+
     /**
      * Get the absolute URL for this page, including protocol and host.
      *
@@ -611,7 +621,12 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
         $this->beforeUpdateCMSFields(
             function ($fields) use ($self) {
                 // Add field group to add Price and Tax field
-                $fields->removeByName(['BasePrice', 'TaxCategoryID', 'TaxRateID']);
+                $fields->removeByName([
+                    'BasePrice',
+                    'TaxCategoryID',
+                    'TaxRateID',
+                    'Disabled'
+                ]);
 
                 $field = FieldGroup::create(
                     $this->getOwner()->dbObject("BasePrice")->scaffoldFormField(''),
@@ -712,7 +727,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
                 $related_field = $fields->dataFieldByName('RelatedProducts');
                 if (!empty($related_field)) {
                     $related_field->setConfig(
-                        new GridFieldConfig_CatalogueRelated(
+                        GridFieldConfig_CatalogueRelated::create(
                             self::class,
                             null,
                             'SortOrder'

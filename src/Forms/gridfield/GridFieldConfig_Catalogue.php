@@ -12,16 +12,15 @@ use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldEditButton;
 use SilverStripe\Forms\GridField\GridField_ActionMenu;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use SilverStripe\Forms\GridField\GridFieldSortableHeader;
 use Colymba\BulkManager\BulkManager as GridFieldBulkManager;
-use SilverCommerce\CatalogueAdmin\BulkManager\EnableHandler;
-use SilverCommerce\CatalogueAdmin\BulkManager\DisableHandler;
 use SilverCommerce\CatalogueAdmin\BulkManager\ProductEditHandler;
+use SilverStripe\Versioned\GridFieldArchiveAction;
+use SilverStripe\Versioned\VersionedGridFieldState\VersionedGridFieldState;
 use Symbiote\GridFieldExtensions\GridFieldConfigurablePaginator;
 
 /**
@@ -45,39 +44,32 @@ class GridFieldConfig_Catalogue extends GridFieldConfig
         parent::__construct();
 
         // Setup initial gridfield
-        $this->addComponent(new GridFieldButtonRow('before'));
-        $this->addComponent(new GridFieldToolbarHeader());
-        $this->addComponent($sort = new GridFieldSortableHeader());
-        $this->addComponent($filter = new GridFieldFilterHeader());
-        $this->addComponent(new GridFieldDataColumns());
-        $this->addComponent(new GridFieldEditButton());
-        $this->addComponent(new GridFieldDeleteAction());
-        $this->addComponent(new GridField_ActionMenu());
-        $this->addComponent(new GridFieldPageCount('toolbar-header-right'));
-        $this->addComponent($pagination = new GridFieldConfigurablePaginator($itemsPerPage));
-        $this->addComponent(new GridFieldExportButton("buttons-before-right"));
+        $this
+            ->addComponent(new GridFieldButtonRow('before'))
+            ->addComponent(new GridFieldToolbarHeader())
+            ->addComponent($sort = new GridFieldSortableHeader())
+            ->addComponent($filter = new GridFieldFilterHeader())
+            ->addComponent(new GridFieldDataColumns())
+            ->addComponent(new VersionedGridFieldState([])) // Set state display to first column
+            ->addComponent(new GridFieldEditButton())
+            ->addComponent(new GridFieldArchiveAction())
+            ->addComponent(new GridField_ActionMenu())
+            ->addComponent(new GridFieldPageCount('toolbar-header-right'))
+            ->addComponent($pagination = new GridFieldConfigurablePaginator($itemsPerPage))
+            ->addComponent(new GridFieldExportButton("buttons-before-right"))
+            ->addComponent(new GridFieldDetailForm());
 
         // Setup Bulk manager
         $manager = new GridFieldBulkManager();
         $manager->removeBulkAction(UnlinkHandler::class);
         $manager->removeBulkAction(EditHandler::class);
         $manager->addBulkAction(ProductEditHandler::class);
-        $manager->addBulkAction(DisableHandler::class);
-        $manager->addBulkAction(EnableHandler::class);
         $this->addComponent($manager);
 
         // Setup add new button
         $subclasses = Helper::getCreatableClasses($classname, $create_baseclass);
         $add_button = new AddNewMultiClass("buttons-before-left");
         $add_button->setClasses($subclasses);
-
-        // If we are managing a category, use the relevent field,
-        // else use product
-        $detail_form = new GridFieldDetailForm();
-        $detail_form
-            ->setItemRequestClass(EnableDisableDetailForm_ItemRequest::class);
-        
-        $this->addComponent($detail_form);
         $this->addComponent($add_button);
 
         if ($sort_col) {

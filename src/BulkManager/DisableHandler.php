@@ -8,6 +8,7 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
 use Colymba\BulkTools\HTTPBulkToolsResponse;
 use Colymba\BulkManager\BulkAction\Handler as GridFieldBulkActionHandler;
+use SilverStripe\Dev\Deprecation;
 
 /**
  * A {@link GridFieldBulkActionHandler} for bulk marking products
@@ -63,6 +64,8 @@ class DisableHandler extends GridFieldBulkActionHandler
 
     public function disable(HTTPRequest $request)
     {
+        Deprecation::notice('2.0', 'Disabled status has been enabled in favour of product versioning');
+
         $response = new HTTPBulkToolsResponse(true, $this->gridField);
 
         try {

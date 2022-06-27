@@ -6,21 +6,22 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\SSViewer;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\View\ArrayData;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Security\Member;
 use SilverStripe\Control\Director;
+use SilverStripe\Forms\HiddenField;
 use SilverStripe\Control\Controller;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Security\Permission;
+use SilverStripe\Versioned\Versioned;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\ORM\Hierarchy\Hierarchy;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Security\PermissionProvider;
+use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
-use SilverCommerce\CatalogueAdmin\Helpers\Helper;
-use SilverStripe\Forms\HiddenField;
-use SilverStripe\Versioned\Versioned;
 
 /**
  * Base class for all product categories stored in the database. The
@@ -70,17 +71,17 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     private static $hierarchy_seperator = "/";
 
     /**
-     * The default class used to exenend this oblect
+     * The default class used to extend this object
      *
      * @var string
      */
     private static $default_subclass = \Category::class;
 
     private static $db = [
-        "Title"             => "Varchar",
-        "Content"           => "HTMLText",
-        "Sort"              => "Int",
-        "Disabled"          => "Boolean"
+        'Title'             => 'Varchar',
+        'Content'           => 'HTMLText',
+        'Sort'              => 'Int',
+        'Disabled'          => 'Boolean' // Now legacy, as switched to versioning
     ];
 
     private static $has_one = [
@@ -103,8 +104,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     private static $summary_fields = [
         'Title'         => 'Title',
         'Children.Count'=> 'Children',
-        'Products.Count'=> 'Products',
-        'Disabled'      => 'Disabled'
+        'Products.Count'=> 'Products'
     ];
 
     private static $casting = [
@@ -130,9 +130,11 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      */
     public function isEnabled()
     {
+        Deprecation::notice('2.0', 'Disabled status discontinued, use versioning/published instead');
+
         return ($this->Disabled) ? false : true;
     }
-
+    
     /**
      * Is this object disabled?
      *
@@ -140,8 +142,39 @@ class CatalogueCategory extends DataObject implements PermissionProvider
      */
     public function isDisabled()
     {
+        Deprecation::notice('2.0', 'Disabled status discontinued, use versioning/published instead');
+
         return $this->Disabled;
     }
+
+    /**
+     * Return a list of child categories that are not disabled
+     *
+     * @return DataList
+     */
+    public function EnabledChildren()
+    {
+        Deprecation::notice('2.0', 'Disabled status discontinued, use versioning/published instead');
+
+        return $this
+            ->Children()
+            ->filter("Disabled", 0);
+    }
+
+    /**
+     * Return a list of products in that category that are not disabled
+     *
+     * @return DataList
+     */
+    public function EnabledProducts()
+    {
+        Deprecation::notice('2.0', 'Disabled status discontinued, use versioning/published instead');
+
+        return $this
+            ->Products()
+            ->filter("Disabled", 0);
+    }
+
 
     /**
      * Stub method to get the site config, unless the current class can provide an alternate.
@@ -361,30 +394,6 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     }
 
     /**
-     * Return a list of child categories that are not disabled
-     *
-     * @return ArrayList
-     */
-    public function EnabledChildren()
-    {
-        return $this
-            ->Children()
-            ->filter("Disabled", 0);
-    }
-
-    /**
-     * Return a list of products in that category that are not disabled
-     *
-     * @return ArrayList
-     */
-    public function EnabledProducts()
-    {
-        return $this
-            ->Products()
-            ->filter("Disabled", 0);
-    }
-
-    /**
      * Return sorted products in thsi category that are enabled
      *
      * @return ArrayList
@@ -414,15 +423,13 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                 "Title" => "ASC"
             ];
         }
-        
+
         $ids = [$this->ID];
         $ids = array_merge($ids, $this->getDescendantIDList());
 
         $products = CatalogueProduct::get()
-            ->filter([
-                "Categories.ID" => $ids,
-                "Disabled" => 0
-            ])->sort($sort);
+            ->filter("Categories.ID", $ids)
+            ->sort($sort);
 
         return $products;
     }
@@ -456,8 +463,8 @@ class CatalogueCategory extends DataObject implements PermissionProvider
             $category_classes = Helper::getCreatableClasses(CatalogueCategory::class);
 
             $fields->removeByName("Sort");
-            $fields->removeByName("Disabled");
             $fields->removeByName("Products");
+            $fields->removeByName("Disabled");
             
             if ($this->exists()) {
                 // Ensure that we set the parent ID to the current category
@@ -468,7 +475,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                         "Children",
                         "",
                         CatalogueCategory::get()->filter("ParentID", $this->ID)
-                    )->setConfig($child_config = new GridFieldConfig_Catalogue(
+                    )->setConfig($child_config = GridFieldConfig_Catalogue::create(
                         CatalogueCategory::class,
                         null,
                         "Sort"
@@ -498,7 +505,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                         "Products",
                         "",
                         $this->Products()
-                    )->setConfig(new GridFieldConfig_CatalogueRelated(
+                    )->setConfig(GridFieldConfig_CatalogueRelated::create(
                         CatalogueProduct::class,
                         null,
                         "SortOrder"

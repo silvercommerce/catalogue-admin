@@ -4,6 +4,7 @@ namespace SilverCommerce\CatalogueAdmin\BulkManager;
 
 use Exception;
 use SilverStripe\Core\Convert;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
 use Colymba\BulkTools\HTTPBulkToolsResponse;
@@ -63,6 +64,8 @@ class EnableHandler extends GridFieldBulkActionHandler
 
     public function enable(HTTPRequest $request)
     {
+        Deprecation::notice('2.0', 'Disabled status has been enabled in favour of product versioning');
+
         $response = new HTTPBulkToolsResponse(true, $this->gridField);
 
         try {
