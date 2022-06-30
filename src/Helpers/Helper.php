@@ -131,7 +131,7 @@ class Helper extends ViewableData
             $reflector = new ReflectionClass(self::class);
             $curr_file = dirname($reflector->getFileName());
             $curr_file = str_replace(
-                "src/helpers",
+                "src/Helpers",
                 "client/dist/images/no-image.png",
                 $curr_file
             );
