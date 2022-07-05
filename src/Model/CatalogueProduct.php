@@ -2,7 +2,6 @@
 
 namespace SilverCommerce\CatalogueAdmin\Model;
 
-use SilverStripe\ORM\DB;
 use SilverStripe\i18n\i18n;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\ArrayList;
@@ -16,12 +15,14 @@ use SilverStripe\Forms\FieldGroup;
 use SilverStripe\Security\Security;
 use SilverStripe\TagField\TagField;
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripe\Core\Injector\Injector;
 use SilverCommerce\TaxAdmin\Model\TaxRate;
 use SilverCommerce\TaxAdmin\Traits\Taxable;
 use SilverStripe\Core\Manifest\ModuleLoader;
@@ -32,8 +33,8 @@ use SilverCommerce\TaxAdmin\Model\TaxCategory;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use Bummzack\SortableFile\Forms\SortableUploadField;
 use SilverCommerce\TaxAdmin\Interfaces\TaxableProvider;
-use SilverStripe\VersionedAdmin\Forms\HistoryViewerField;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
+use SilverCommerce\CatalogueAdmin\Tasks\CatalogueWriteAllItemsTask;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -762,17 +763,12 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     public function requireDefaultRecords()
     {
         parent::requireDefaultRecords();
-        
-        $records = CatalogueProduct::get()
-            ->filter("ClassName", "CatalogueProduct");
-        
-        if ($records->exists()) {
-            // Alter any existing recods that might have the wrong classname
-            foreach ($records as $product) {
-                $product->ClassName = "Product";
-                $product->write();
-            }
-            DB::alteration_message("Updated {$records->count()} Product records", 'obsolete');
+
+        $run_migration = CatalogueWriteAllItemsTask::config()->run_during_dev_build;
+
+        if ($run_migration) {
+            $request = Injector::inst()->get(HTTPRequest::class);
+            CatalogueWriteAllItemsTask::create()->run($request);
         }
     }
 

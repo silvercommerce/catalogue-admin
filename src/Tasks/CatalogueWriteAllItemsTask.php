@@ -2,6 +2,7 @@
 
 namespace SilverCommerce\CatalogueAdmin\Tasks;
 
+use SilverStripe\ORM\DB;
 use SilverStripe\Dev\BuildTask;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
@@ -15,10 +16,11 @@ use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
  */
 class CatalogueWriteAllItemsTask extends BuildTask
 {
-    
     protected $title = 'Write All Products and Categories';
     
     protected $description = 'Loop through all products and product categories and re-save them.';
+
+    private static $run_during_dev_build = true;
     
     public function run($request)
     {
@@ -29,6 +31,13 @@ class CatalogueWriteAllItemsTask extends BuildTask
         $items = CatalogueProduct::get();
         
         foreach ($items as $item) {
+        
+            // Alter any existing recods that might have the wrong classname
+            if ($item->ClassName === CatalogueProduct::class) {
+                $item->ClassName = \Product::class;
+                $item->write();
+            }
+
             // Just write product, on before write should deal with the rest
             $item->write();
             $products++;
@@ -43,6 +52,7 @@ class CatalogueWriteAllItemsTask extends BuildTask
             $categories++;
         }
         
-        echo "Wrote $products products and $categories categories.\n";
+
+        DB::alteration_message("Wrote $products products and $categories categories.\n", 'obsolete');
     }
 }
