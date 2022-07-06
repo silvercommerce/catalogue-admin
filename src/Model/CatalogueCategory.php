@@ -554,14 +554,6 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     public function requireDefaultRecords()
     {
         parent::requireDefaultRecords();
-        $class = $this->config()->default_subclass;
-        $categories = CatalogueCategory::get()->filter("ClassName", CatalogueCategory::class);
-
-        // Alter any existing recods that might have the wrong classname
-        foreach ($categories as $category) {
-            $category->ClassName = $class;
-            $category->write();
-        }
     }
 
     public function providePermissions()
