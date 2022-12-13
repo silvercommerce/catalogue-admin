@@ -18,6 +18,7 @@ en:
     TaxExcludes: Excludes
     TaxIncludes: Includes
     TaxRates: 'Tax Rates'
+    Duplicate: 'Duplicate'
   CatalogueAdmin:
     AddCategory: 'Add Category'
     AddProduct: 'Add Product'
