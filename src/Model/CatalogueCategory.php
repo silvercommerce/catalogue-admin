@@ -71,6 +71,14 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     private static $hierarchy_seperator = "/";
 
     /**
+     * When duplicating this item, add this to the end of
+     * title and stock ID
+     *
+     * @var string
+     */
+    private static $duplicate_suffix = "-copy";
+
+    /**
      * The default class used to extend this object
      *
      * @var string
@@ -121,6 +129,10 @@ class CatalogueCategory extends DataObject implements PermissionProvider
     private static $searchable_fields = [
         "Title",
         "Content"
+    ];
+
+    private static $cascade_duplicates = [
+        'Products' => CatalogueProduct::class
     ];
 
     /**
@@ -516,7 +528,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                     "ParentID",
                     _t("CatalogueAdmin.ParentCategory", "Parent Category"),
                     CatalogueCategory::class
-                )->setLabelField("Title")
+                )->setTitleField("Title")
                 ->setKeyField("ID");
             } else {
                 $parent_field = HiddenField::create(
@@ -549,6 +561,13 @@ class CatalogueCategory extends DataObject implements PermissionProvider
                 $child->delete();
             }
         }
+    }
+
+    public function onBeforeDuplicate()
+    {
+        $suffix = $this->config()->duplicate_suffix;
+
+        $this->Title = $this->Title . $suffix;
     }
 
     public function requireDefaultRecords()

@@ -57,21 +57,21 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
      * Determines if a product's stock ID will be auto generated if
      * not set.
      *
-     * @config
+     * @var bool
      */
     private static $auto_stock_id = true;
 
     /**
      * Human-readable singular name.
+     *
      * @var string
-     * @config
      */
     private static $singular_name = 'Product';
 
     /**
      * Human-readable plural name
+     *
      * @var string
-     * @config
      */
     private static $plural_name = 'Products';
     
@@ -80,10 +80,17 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
      * when it comes to creating it for the first time.
      *
      * @var string
-     * @config
      */
     private static $description = "A standard catalogue product";
-    
+
+    /**
+     * When duplicating this item, add this to the end of
+     * title and stock ID
+     *
+     * @var string
+     */
+    private static $duplicate_suffix = "-copy";
+
     private static $db = [
         'Title'             => 'Varchar(255)',
         'BasePrice'         => 'Decimal(9,3)',
@@ -177,6 +184,15 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
 
     private static $default_sort = [
         "Title" => "ASC"
+    ];
+
+    private static $cascade_duplicates = [
+        'TaxRate',
+        'TaxCategory',
+        'Images',
+        'Tags',
+        'RelatedProducts',
+        'Categories'
     ];
 
     /**
@@ -827,6 +843,14 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
             $this->StockID = $this->generateStockID();
             $this->write();
         }
+    }
+
+    public function onBeforeDuplicate()
+    {
+        $suffix = $this->config()->duplicate_suffix;
+
+        $this->StockID = $this->StockID . $suffix;
+        $this->Title = $this->Title . $suffix;
     }
 
     public function canView($member = null)
