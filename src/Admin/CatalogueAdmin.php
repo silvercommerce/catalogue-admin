@@ -3,16 +3,18 @@
 namespace SilverCommerce\CatalogueAdmin\Admin;
 
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
+use SilverStripe\Forms\GridField\GridFieldDetailForm;
+use SilverStripe\Forms\GridField\GridFieldPrintButton;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use SilverStripe\Forms\GridField\GridFieldImportButton;
+use ilateral\SilverStripe\ModelAdminPlus\ModelAdminPlus;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
+use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
 use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
-use SilverStripe\Forms\GridField\GridFieldPrintButton;
-use ilateral\SilverStripe\ModelAdminPlus\ModelAdminPlus;
-use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
-use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
@@ -139,53 +141,65 @@ class CatalogueAdmin extends ModelAdminPlus
         return $list;
     }
 
-    public function getEditForm($id = null, $fields = null)
+    protected function getGridFieldConfig(): GridFieldConfig
     {
-        $form = parent::getEditForm($id, $fields);
-        $fields = $form->Fields();
-        $import_button = null;
-        $grid = $fields
-            ->fieldByName($this->sanitiseClassName($this->modelClass));
+        $model = $this->getModelClass();
+        $singleton = singleton($model);
+        $config = parent::getGridFieldConfig();
+        $import_button = $config->getComponentByType(GridFieldImportButton::class);
 
         if ($this->isProduct()) {
-            $export_button = $grid->getConfig()->getComponentByType(GridFieldExportButton::class);
-            $export_button->setExportColumns($this->getExportFields());
-
-            $import_button = $grid->getConfig()->getComponentByType(GridFieldImportButton::class);
-
-            $grid->setConfig(GridFieldConfig_Catalogue::create(
-                $this->modelClass,
+            $config = GridFieldConfig_Catalogue::create(
+                $model,
                 $this->config()->product_page_length
-            ));
+            );
 
-            $grid
-                ->getConfig()
+            /** @var GridFieldExportButton  */
+            $export_button = $config->getComponentByType(GridFieldExportButton::class);
+            $export_button->setExportColumns($this->getExportFields());
+            
+            $config
                 ->removeComponentsByType(GridFieldExportButton::class)
                 ->addComponents(new GridFieldPrintButton('buttons-before-left'))
-                ->addComponent($import_button)
                 ->addComponent($export_button);
+
+            if (!empty($import_button)) {
+                $config->addComponent($import_button);
+            }
         }
         
         if ($this->isCategory()) {
-            $grid->setConfig(GridFieldConfig_Catalogue::create(
+            $config = GridFieldConfig_Catalogue::create(
                 $this->modelClass,
                 $this->config()->category_page_length,
                 "Sort"
-            ));
-            $grid
-                ->getConfig()
-                ->removeComponentsByType(GridFieldExportButton::class);
+            );
+
+            $config->removeComponentsByType(GridFieldExportButton::class);
+
+            if (!empty($import_button)) {
+                $config->addComponent($import_button);
+            }
+        }
+
+        // Re-add vaidation
+        if (($this->isProduct() || $this->isCategory())
+            && $singleton->hasMethod('getCMSCompositeValidator')
+        ) {
+            $detailValidator = $singleton->getCMSCompositeValidator();
+            /** @var GridFieldDetailForm $detailform */
+            $detailform = $config->getComponentByType(GridFieldDetailForm::class);
+            $detailform->setValidator($detailValidator);
         }
 
         if ($this->isTag()) {
-            $grid
-                ->getConfig()
+            $config
                 ->removeComponentsByType(GridFieldImportButton::class)
                 ->addComponent(GridFieldOrderableRows::create());
         }
 
-        $this->extend("updateEditForm", $form);
+        $this->extend('updateGridFieldConfig', $config);
 
-        return $form;
+        return $config;
     }
 }
