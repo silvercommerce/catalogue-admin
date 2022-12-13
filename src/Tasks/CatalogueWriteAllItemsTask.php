@@ -6,6 +6,7 @@ use SilverStripe\ORM\DB;
 use SilverStripe\Dev\BuildTask;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
+use SilverStripe\Core\Config\Config;
 
 /**
  * Loops through all products and Categories, and sets their URL Segments, if
@@ -30,28 +31,41 @@ class CatalogueWriteAllItemsTask extends BuildTask
         // First load all products
         $items = CatalogueProduct::get();
         
+        /** @var CatalogueProduct $item */
         foreach ($items as $item) {
-        
+            $class = Config::inst()->get(
+                CatalogueProduct::class,
+                'default_subclass'
+            );
+
             // Alter any existing recods that might have the wrong classname
             if ($item->ClassName === CatalogueProduct::class) {
-                $item->ClassName = \Product::class;
-                $item->write();
+                $item->ClassName = $class;
             }
 
             // Just write product, on before write should deal with the rest
-            $item->write();
+            $item->write(false, false, true);
             $products++;
         }
     
         // Then all categories
         $items = CatalogueCategory::get();
         
+        /** @var CatalogueCategory $item */
         foreach ($items as $item) {
+            $class = Config::inst()->get(
+                CatalogueCategory::class,
+                'default_subclass'
+            );
+
+            if ($item->ClassName === CatalogueCategory::class) {
+                $item->ClassName = $class;
+            }
+
             // Just write category, on before write should deal with the rest
-            $item->write();
+            $item->write(false, false, true);
             $categories++;
         }
-        
 
         DB::alteration_message("Wrote $products products and $categories categories.\n", 'obsolete');
     }
