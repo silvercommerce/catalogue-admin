@@ -56,8 +56,11 @@ class GridFieldConfig_Catalogue extends GridFieldConfig
             ->addComponent(new GridField_ActionMenu())
             ->addComponent(new GridFieldPageCount('toolbar-header-right'))
             ->addComponent($pagination = new GridFieldConfigurablePaginator($itemsPerPage))
-            ->addComponent(new GridFieldExportButton("buttons-before-right"))
-            ->addComponent(new GridFieldDetailForm());
+            ->addComponent(new GridFieldExportButton("buttons-before-right"));
+
+        $detailform = new GridFieldDetailForm();
+        $detailform->setItemRequestClass(CatalogueDetailForm_ItemRequest::class);
+        $this->addComponent($detailform);
 
         // Setup Bulk manager
         $manager = new GridFieldBulkManager();
