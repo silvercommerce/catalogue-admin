@@ -32,9 +32,7 @@ class ProductTag extends DataObject implements PermissionProvider
         'Products' => CatalogueProduct::class
     ];
 
-    private static $default_sort = [
-        "Title" => "ASC"
-    ];
+    private static $default_sort = "Title ASC";
 
     private static $summary_fields = [
         "Title" => "Title",

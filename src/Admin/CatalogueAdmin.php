@@ -195,7 +195,7 @@ class CatalogueAdmin extends ModelAdminPlus
         if ($this->isTag()) {
             $config
                 ->removeComponentsByType(GridFieldImportButton::class)
-                ->addComponent(GridFieldOrderableRows::create());
+                ->addComponent(new GridFieldOrderableRows('Sort'));
         }
 
         $this->extend('updateGridFieldConfig', $config);
