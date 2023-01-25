@@ -4,9 +4,9 @@ namespace SilverCommerce\CatalogueAdmin\Forms\GridField;
 
 use SilverStripe\Forms\FormAction;
 use SilverStripe\ORM\ValidationResult;
-use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
+use SilverStripe\Versioned\VersionedGridFieldItemRequest;
 
-class CatalogueDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
+class CatalogueDetailForm_ItemRequest extends VersionedGridFieldItemRequest
 {
     private static $allowed_actions = [
         'edit',
