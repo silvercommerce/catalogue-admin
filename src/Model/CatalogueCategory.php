@@ -122,9 +122,7 @@ class CatalogueCategory extends DataObject implements PermissionProvider
         "FullHierarchy" => "Varchar(255)"
     ];
 
-    private static $default_sort = [
-        "Sort" => "ASC"
-    ];
+    private static $default_sort = "Sort ASC";
 
     private static $searchable_fields = [
         "Title",

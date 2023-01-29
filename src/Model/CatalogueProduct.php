@@ -182,9 +182,7 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
         "ClassName"
     ];
 
-    private static $default_sort = [
-        "Title" => "ASC"
-    ];
+    private static $default_sort = "Title ASC";
 
     private static $cascade_duplicates = [
         'TaxRate',
