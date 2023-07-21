@@ -22,17 +22,17 @@ class CatalogueDetailForm_ItemRequest extends VersionedGridFieldItemRequest
         $can_create = $record->canEdit();
         $can_edit = $record->canEdit();
 
-        if (!empty($form) && $exists && $can_create && $can_edit) {
+        if (!empty($form) && $exists
+            && $can_create && $can_edit
+        ) {
             $actions = $form->Actions();
 
-            $actions->addFieldsToTab(
-                'RightGroup',
+            $actions->insertBefore(
+                'action_doUnpublish',
                 FormAction::create(
                     'doDuplicate',
                     _t('Catalogue.Duplicate', 'Duplicate')
-                )->setUseButtonTag(true)
-                ->addExtraClass('btn btn-outline-primary btn-hide-outline')
-                ->addExtraClass('action font-icon-page-multiple')
+                )->addExtraClass('btn-secondary')
             );
         }
 
@@ -44,24 +44,36 @@ class CatalogueDetailForm_ItemRequest extends VersionedGridFieldItemRequest
     public function doDuplicate($data, $form)
     {
         $record = $this->getRecord();
-        $can_create = $record->canEdit();
-        $can_edit = $record->canEdit();
 
         // Check permission
-        if (!$can_create || !$can_edit) {
+        if (!$record->canEdit()) {
             $this->httpError(403, _t(
-                'Catalogue.DuplicatePermissionsFailure',
-                'You do not have permission to duplicate "{ObjectTitle}"',
+                __CLASS__ . '.EditPermissionsFailure',
+                'It seems you don\'t have the necessary permissions to edit "{ObjectTitle}"',
                 ['ObjectTitle' => $record->singular_name()]
             ));
             return null;
         }
 
-        $duplicate = $record->duplicate();
+        // Save existing from form data
+        $this->saveFormIntoRecord($data, $form);
 
+        // Duplicate and update name
+        $duplicate = $record->duplicate(true);
+        $duplicate->Title = _t(
+            'Catalogue.Copy',
+            '{title} COPY',
+            [ 'title' => $record->Title]
+        );
+        $duplicate->write();
+
+        // Generate link to original
         $link = '<a href="' . $this->Link('edit') . '">"'
-            . htmlspecialchars($this->record->Title, ENT_QUOTES)
+            . htmlspecialchars($record->Title, ENT_QUOTES)
             . '"</a>';
+        
+        $this->record = $duplicate;
+
         $message = _t(
             'Catalogue.Duplicated',
             'Duplicated {name} {link}',
@@ -71,18 +83,14 @@ class CatalogueDetailForm_ItemRequest extends VersionedGridFieldItemRequest
             ]
         );
 
+        // Load message
         $form->sessionMessage(
             $message,
             'good',
             ValidationResult::CAST_HTML
         );
 
-        // Changes to the record properties might've excluded the record from
-        // a filtered list, so return back to the main view if it can't be found
-        $controller = $this->getToplevelController();
-        $url = $controller->getRequest()->getURL();
-        $noActionURL = $controller->removeAction($url);
-        $controller->getRequest()->addHeader('X-Pjax', 'Content');
-        return $controller->redirect($noActionURL, 302);
+        // Redirect after save
+        return $this->redirectAfterSave(true);
     }
 }
