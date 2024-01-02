@@ -35,6 +35,7 @@ use Bummzack\SortableFile\Forms\SortableUploadField;
 use SilverCommerce\TaxAdmin\Interfaces\TaxableProvider;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
 use SilverCommerce\CatalogueAdmin\Tasks\CatalogueWriteAllItemsTask;
+use SilverCommerce\CatalogueAdmin\Validator\ProductValidator;
 
 /**
  * Base class for all products stored in the database. The intention is
@@ -764,14 +765,8 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
     }
 
     public function getCMSValidator()
-    {
-        $required = ["Title"];
-        
-        if (!$this->config()->auto_stock_id) {
-            $required[] = "StockID";
-        }
-        
-        return RequiredFields::create($required);
+    {   
+        return ProductValidator::create();
     }
     
     public function requireDefaultRecords()
