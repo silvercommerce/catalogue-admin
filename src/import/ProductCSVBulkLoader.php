@@ -71,6 +71,29 @@ class ProductCSVBulkLoader extends CsvBulkLoader
     }
 
     /**
+     * Is the current row of data empty (excel sometimes
+     * creates CSV's with empty rows)
+     *
+     * @return bool
+     */
+    protected function isEmptyRow(array $record)
+    {
+        $empty_count = 0;
+
+        foreach ($record as $key => $value) {
+            if (empty($value)) {
+                $empty_count++;
+            }
+        }
+
+        if (count(array_keys($record)) === $empty_count) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @inheritdoc
      *
      * @param array $record
@@ -83,6 +106,12 @@ class ProductCSVBulkLoader extends CsvBulkLoader
     public function processRecord($record, $columnMap, &$results, $preview = false)
     {
         $this->extend("onBeforeProcess", $record, $columnMap, $results, $preview);
+
+        $empty_row = $this->isEmptyRow($record);
+
+        if ($empty_row === true) {
+            return 0;
+        }
 
         // If classname is set, ensure we either manually set the custom classname
         // (for existing), or create a new object of the correct class and write it
