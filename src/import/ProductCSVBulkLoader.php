@@ -125,6 +125,7 @@ class ProductCSVBulkLoader extends CsvBulkLoader
             $obj = ($existingObj) ? $existingObj : $this->objectClass::create();
             $obj->ClassName = $record['ClassName'];
             $obj->write();
+            $record['ID'] = $obj->ID;
         }
 
         $objID = parent::processRecord($record, $columnMap, $results, $preview);
