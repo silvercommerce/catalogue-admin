@@ -5,6 +5,7 @@ namespace SilverCommerce\CatalogueAdmin\Import;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\CsvBulkLoader;
+use SilverStripe\Dev\BulkLoader_Result;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
