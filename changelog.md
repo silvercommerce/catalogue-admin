@@ -116,3 +116,7 @@
 ## 1.3.9
 
 * Add upgrade mappings from silverstripe-commerce
+
+## 1.3.10
+
+* Add improvements to product importer
