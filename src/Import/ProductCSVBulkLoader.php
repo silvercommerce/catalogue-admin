@@ -5,6 +5,7 @@ namespace SilverCommerce\CatalogueAdmin\Import;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\CsvBulkLoader;
+use SilverStripe\Dev\BulkLoader_Result;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
@@ -71,6 +72,29 @@ class ProductCSVBulkLoader extends CsvBulkLoader
     }
 
     /**
+     * Is the current row of data empty (excel sometimes
+     * creates CSV's with empty rows)
+     *
+     * @return bool
+     */
+    protected function isEmptyRow(array $record)
+    {
+        $empty_count = 0;
+
+        foreach ($record as $key => $value) {
+            if (empty($value)) {
+                $empty_count++;
+            }
+        }
+
+        if (count(array_keys($record)) === $empty_count) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @inheritdoc
      *
      * @param array $record
@@ -84,6 +108,12 @@ class ProductCSVBulkLoader extends CsvBulkLoader
     {
         $this->extend("onBeforeProcess", $record, $columnMap, $results, $preview);
 
+        $empty_row = $this->isEmptyRow($record);
+
+        if ($empty_row === true) {
+            return 0;
+        }
+
         // If classname is set, ensure we either manually set the custom classname
         // (for existing), or create a new object of the correct class and write it
         // (as by default all objects are created as CatalogueProduct)
@@ -96,6 +126,7 @@ class ProductCSVBulkLoader extends CsvBulkLoader
             $obj = ($existingObj) ? $existingObj : $this->objectClass::create();
             $obj->ClassName = $record['ClassName'];
             $obj->write();
+            $record['ID'] = $obj->ID;
         }
 
         $objID = parent::processRecord($record, $columnMap, $results, $preview);
