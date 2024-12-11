@@ -27,7 +27,7 @@
         "silverstripe/versioned": "^1.7 || ^2",
         "silverstripe/versioned-admin": "^1.7 || ^2",
         "silverstripe/asset-admin": "^1 || ^2",
-        "dft/silverstripe-modeladminplus": "^1 || ^2",
+        "dft/silverstripe-modeladminplus": "^2.1",
         "silvercommerce/tax-admin": "^1.4",
         "silvercommerce/settings": "^1.0",
         "bummzack/sortablefile": "^2.2",
