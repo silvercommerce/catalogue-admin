@@ -14,28 +14,24 @@
     "license": "BSD-3-Clause",
     "authors": [
         {
-            "name": "Morven Lewis-Everley",
-            "email": "morven@ilateral.co.uk"
-        },
-        {
-            "name": "Mark Anderson",
-            "email": "mark@ilateral.co.uk"
+            "name": "Dean Forest Tech",
+            "homepage": "https://dean-forest-tech.uk"
         }
     ],
     "support": {
         "issues": "https://github.com/silvercommerce/catalogue-admin/issues"
     },
     "require": {
-        "silverstripe/framework": "^4.6",
-        "silverstripe/siteconfig": "^4.6",
-        "silverstripe/versioned": "^1.7",
-        "silverstripe/versioned-admin": "^1.7",
-        "silverstripe/asset-admin": "^1.0",
-        "i-lateral/silverstripe-modeladminplus": "^1.0",
+        "silverstripe/framework": "^4.6 || ^5",
+        "silverstripe/siteconfig": "^4.6 || ^5",
+        "silverstripe/versioned": "^1.7 || ^2",
+        "silverstripe/versioned-admin": "^1.7 || ^2",
+        "silverstripe/asset-admin": "^1 || ^2",
+        "dft/silverstripe-modeladminplus": "^1 || ^2",
         "silvercommerce/tax-admin": "^1.4",
         "silvercommerce/settings": "^1.0",
-        "bummzack/sortablefile": "^2.0",
-        "silverstripe/tagfield": "^2.11"
+        "bummzack/sortablefile": "^2.2",
+        "silverstripe/tagfield": "^2.11 || ^3"
     },
     "extra": {
         "expose": [
@@ -49,7 +45,7 @@
     },
     "suggest": {
         "silverstripe/cms": "Add full content management support to your site",
-        "i-lateral/silverstripe-users": "Add user account management, login and registration"
+        "dft/silverstripe-users": "Add user account management, login and registration"
     },
     "config": {
         "allow-plugins": {

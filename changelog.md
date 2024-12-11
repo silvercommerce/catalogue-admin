@@ -123,6 +123,7 @@
 
 ## 1.4.0
 
+* SS5 Support
 * Add versioned Products and Categories by default
 * Re-arrange class structure
 * Switch to font icon for catalogue admin
