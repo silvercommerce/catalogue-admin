@@ -4,7 +4,7 @@ namespace SilverCommerce\CatalogueAdmin\Model;
 
 use SilverStripe\Core\Convert;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 
@@ -62,48 +62,48 @@ class ProductTag extends DataObject implements PermissionProvider
 
     public function canCreate($member = null, $context = [])
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member->ID,
             ["ADMIN", "CATALOGUE_ADD_TAGS"]
         );
     }
 
     public function canEdit($member = null)
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member->ID,
             ["ADMIN", "CATALOGUE_EDIT_TAGS"]
         );
     }
 
     public function canDelete($member = null)
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member->ID,
             ["ADMIN", "CATALOGUE_DELETE_TAGS"]
         );
     }
