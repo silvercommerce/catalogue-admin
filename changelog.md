@@ -120,3 +120,8 @@
 ## 1.3.10
 
 * Add improvements to product importer
+
+## 1.3.11
+
+* Add SS5 support
+* Update depretiated calls
