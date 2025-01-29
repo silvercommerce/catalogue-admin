@@ -25,7 +25,7 @@
         "silverstripe/framework": "^4 || ^5",
         "silverstripe/siteconfig": "^4 || ^5",
         "silverstripe/asset-admin": "^1 || ^2",
-        "dft/silverstripe-modeladminplus": "^1",
+        "dft/silverstripe-modeladminplus": "^2",
         "silvercommerce/tax-admin": "^1.4",
         "silvercommerce/settings": "^1",
         "bummzack/sortablefile": "^2",
