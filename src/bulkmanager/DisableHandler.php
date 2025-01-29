@@ -3,18 +3,10 @@
 namespace SilverCommerce\CatalogueAdmin\BulkManager;
 
 use Exception;
-use SilverStripe\Core\Convert;
 use SilverStripe\Control\HTTPRequest;
-use SilverStripe\Control\HTTPResponse;
 use Colymba\BulkTools\HTTPBulkToolsResponse;
 use Colymba\BulkManager\BulkAction\Handler as GridFieldBulkActionHandler;
 
-/**
- * A {@link GridFieldBulkActionHandler} for bulk marking products
- *
- * @author i-lateral (http://www.i-lateral.com)
- * @package catalogue
- */
 class DisableHandler extends GridFieldBulkActionHandler
 {
     private static $url_segment = 'disable';

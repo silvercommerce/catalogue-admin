@@ -1,7 +1,7 @@
 Silverstripe Catalogue Module
 =============================
 
-The Silverstripe Cataqlogue provides an interface to create and manage
+The Silverstripe Catalogue provides an interface to create and manage
 "Products" and "Categories" in isolation of the CMS module.
 
 Most ecommerce systems provide a tabular interface to easily manage
@@ -16,10 +16,8 @@ object URLs.
 **NOTE** Please be aware, this module only provides a product catalogue
 to Silverstripe, including Stock ID's, prices, SEO friendly URLS, etc.
 
-If you want full e-commerce, you will need to add the [orders](https://github.com/i-lateral/silverstripe-orders)
-and [checkout](https://github.com/i-lateral/silverstripe-checkout) module
-(or install the [commerce](https://github.com/i-lateral/silverstripe-commerce)
-module instead).
+If you want full e-commerce, you will need to add the [orders](https://github.com/silvercommerce/orders-admin) and [checkout](https://github.com/silvercommerce/checkout) module
+(or install a full commerce site with the [SilverCommerce Recipe](https://github.com/silvercommerce/silvercommerce-recipe) module instead).
 
 ## Further reading
 

@@ -28,9 +28,6 @@ use SilverStripe\Forms\HiddenField;
  *
  * This allows users familier with working with the CMS a common
  * platform for developing ecommerce type functionality.
- *
- * @author i-lateral (http://www.i-lateral.com)
- * @package catalogue
  */
 class CatalogueCategory extends DataObject implements PermissionProvider
 {

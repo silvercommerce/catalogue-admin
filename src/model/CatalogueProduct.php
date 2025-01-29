@@ -32,17 +32,6 @@ use Bummzack\SortableFile\Forms\SortableUploadField;
 use SilverCommerce\TaxAdmin\Interfaces\TaxableProvider;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
 
-/**
- * Base class for all products stored in the database. The intention is
- * to allow Product objects to be extended in the same way as a more
- * conventional "Page" object.
- *
- * This allows users familier with working with the CMS a common
- * platform for developing ecommerce type functionality.
- *
- * @author i-lateral (http://www.i-lateral.com)
- * @package catalogue
- */
 class CatalogueProduct extends DataObject implements PermissionProvider, TaxableProvider
 {
     use Taxable;

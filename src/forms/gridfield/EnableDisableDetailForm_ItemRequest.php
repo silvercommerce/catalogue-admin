@@ -9,14 +9,8 @@ use SilverStripe\Core\Convert;
 use SilverStripe\Control\Controller;
 use SilverStripe\Forms\FormAction;
 
-/**
- * Custom detailform for items that can vbe enabled and disabled
- *
- * @author ilateral
- */
 class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
 {
-
     private static $allowed_actions = [
         'edit',
         'view',

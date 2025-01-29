@@ -8,15 +8,8 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 
-/**
- * A simple tag that can be used to filter products
- *
- * @author i-lateral (http://www.i-lateral.com)
- * @package CatalogueAdmin
- */
 class ProductTag extends DataObject implements PermissionProvider
 {
-    
     private static $table_name = 'ProductTag';
 
     private static $db = [
@@ -25,9 +18,6 @@ class ProductTag extends DataObject implements PermissionProvider
         'Sort' => 'Int'
     ];
 
-    /**
-     * @var array
-     */
     private static $belongs_many_many = [
         'Products' => CatalogueProduct::class
     ];

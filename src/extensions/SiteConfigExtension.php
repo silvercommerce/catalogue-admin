@@ -27,12 +27,6 @@ use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverStripe\Forms\GridField\GridFieldSortableHeader;
 
-/**
- * Provides additional settings required globally for this module
- *
- * @author i-lateral (http://www.i-lateral.com)
- * @package product-catalogue
- */
 class SiteConfigExtension extends DataExtension
 {
 

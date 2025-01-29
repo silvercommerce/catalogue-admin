@@ -10,18 +10,13 @@ use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverStripe\Forms\GridField\GridFieldPrintButton;
-use ilateral\SilverStripe\ModelAdminPlus\ModelAdminPlus;
+use DFT\SilverStripe\ModelAdminPlus\ModelAdminPlus;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 
 /**
  * CatalogueAdmin creates an admin area that allows editing of products
  * and product categories
- *
- * @author Mo <morven@ilateral.co.uk>
- * @author Mark <mark@ilateral.co.uk>
- * @package catalogue
- * @subpackage admin
  */
 class CatalogueAdmin extends ModelAdminPlus
 {
