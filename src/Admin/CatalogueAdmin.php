@@ -4,27 +4,18 @@ namespace SilverCommerce\CatalogueAdmin\Admin;
 
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\GridField\GridFieldConfig;
+use DFT\SilverStripe\ModelAdminPlus\ModelAdminPlus;
 use SilverCommerce\CatalogueAdmin\Model\ProductTag;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldPrintButton;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use SilverStripe\Forms\GridField\GridFieldImportButton;
-use ilateral\SilverStripe\ModelAdminPlus\ModelAdminPlus;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
 use SilverCommerce\CatalogueAdmin\Import\ProductCSVBulkLoader;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 
-/**
- * CatalogueAdmin creates an admin area that allows editing of products
- * and product categories
- *
- * @author Mo <morven@ilateral.co.uk>
- * @author Mark <mark@ilateral.co.uk>
- * @package catalogue
- * @subpackage admin
- */
 class CatalogueAdmin extends ModelAdminPlus
 {
     /**
