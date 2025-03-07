@@ -15,13 +15,6 @@ use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
 use SilverStripe\ORM\DB;
 
-/**
- * Simple helper class to provide common functions across
- * all libraries
- *
- * @author i-lateral (http://www.i-lateral.com)
- * @package catalogue
- */
 class Helper extends ViewableData
 {
     /**

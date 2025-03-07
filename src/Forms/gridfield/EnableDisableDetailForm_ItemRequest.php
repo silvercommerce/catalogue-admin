@@ -7,14 +7,8 @@ use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\Security\Security;
 use SilverStripe\Control\Controller;
-use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
 
-/**
- * Custom detailform for items that can vbe enabled and disabled
- *
- * @author ilateral
- */
 class EnableDisableDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
 {
 

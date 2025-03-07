@@ -31,8 +31,6 @@ use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelat
  * This allows users familier with working with the CMS a common
  * platform for developing ecommerce type functionality.
  *
- * @author i-lateral (http://www.i-lateral.com)
- * @package catalogue
  */
 class CatalogueCategory extends DataObject implements PermissionProvider
 {

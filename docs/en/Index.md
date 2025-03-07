@@ -16,11 +16,6 @@ object URLs.
 **NOTE** Please be aware, this module only provides a product catalogue
 to Silverstripe, including Stock ID's, prices, SEO friendly URLS, etc.
 
-If you want full e-commerce, you will need to add the [orders](https://github.com/i-lateral/silverstripe-orders)
-and [checkout](https://github.com/i-lateral/silverstripe-checkout) module
-(or install the [commerce](https://github.com/i-lateral/silverstripe-commerce)
-module instead).
-
 ## Further reading
 
 * [Installation & Setup](Installation.md)

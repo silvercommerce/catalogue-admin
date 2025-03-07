@@ -45,8 +45,6 @@ use SilverCommerce\CatalogueAdmin\Validator\ProductValidator;
  * This allows users familier with working with the CMS a common
  * platform for developing ecommerce type functionality.
  *
- * @author i-lateral (http://www.i-lateral.com)
- * @package catalogue
  */
 class CatalogueProduct extends DataObject implements PermissionProvider, TaxableProvider
 {

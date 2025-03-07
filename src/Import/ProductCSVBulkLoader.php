@@ -10,12 +10,6 @@ use SilverCommerce\CatalogueAdmin\Model\ProductTag;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueProduct;
 use SilverCommerce\CatalogueAdmin\Model\CatalogueCategory;
 
-/**
- * Allow slightly more complex product imports from a CSV file
- *
- * @author i-lateral (http://www.i-lateral.com)
- * @package catalogue
- */
 class ProductCSVBulkLoader extends CsvBulkLoader
 {
     public $columnMap = [

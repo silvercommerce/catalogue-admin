@@ -11,8 +11,6 @@ use SilverStripe\Security\PermissionProvider;
 /**
  * A simple tag that can be used to filter products
  *
- * @author i-lateral (http://www.i-lateral.com)
- * @package CatalogueAdmin
  */
 class ProductTag extends DataObject implements PermissionProvider
 {
