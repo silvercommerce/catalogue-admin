@@ -852,48 +852,60 @@ class CatalogueProduct extends DataObject implements PermissionProvider, Taxable
 
     public function canCreate($member = null, $context = [])
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (!empty($member) && is_numeric($member)) {
+            $member = Member::get_by_id($member);
+        }
+
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member,
             ["ADMIN", "CATALOGUE_ADD_PRODUCTS"]
         );
     }
 
     public function canEdit($member = null)
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (!empty($member) && is_numeric($member)) {
+            $member = Member::get_by_id($member);
+        }
+
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member,
             ["ADMIN", "CATALOGUE_EDIT_PRODUCTS"]
         );
     }
 
     public function canDelete($member = null)
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (!empty($member) && is_numeric($member)) {
+            $member = Member::get_by_id($member);
+        }
+
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member,
             ["ADMIN", "CATALOGUE_DELETE_PRODUCTS"]
         );
     }

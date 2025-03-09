@@ -22,6 +22,7 @@ use SilverStripe\Security\PermissionProvider;
 use SilverCommerce\CatalogueAdmin\Helpers\Helper;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_Catalogue;
 use SilverCommerce\CatalogueAdmin\Forms\GridField\GridFieldConfig_CatalogueRelated;
+use SilverStripe\Security\Security;
 
 /**
  * Base class for all product categories stored in the database. The
@@ -603,48 +604,60 @@ class CatalogueCategory extends DataObject implements PermissionProvider
 
     public function canCreate($member = null, $context = [])
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (!empty($member) && is_numeric($member)) {
+            $member = Member::get_by_id($member);
+        }
+
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member,
             ["ADMIN", "CATALOGUE_ADD_CATEGORIES"]
         );
     }
 
     public function canEdit($member = null, $context = [])
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (!empty($member) && is_numeric($member)) {
+            $member = Member::get_by_id($member);
+        }
+
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member,
             ["ADMIN", "CATALOGUE_EDIT_CATEGORIES"]
         );
     }
 
     public function canDelete($member = null, $context = [])
     {
-        if ($member instanceof Member) {
-            $memberID = $member->ID;
-        } elseif (is_numeric($member)) {
-            $memberID = $member;
-        } else {
-            $memberID = Member::currentUserID();
+        if (!empty($member) && is_numeric($member)) {
+            $member = Member::get_by_id($member);
+        }
+
+        if (empty($member)) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (empty($member)) {
+            return false;
         }
 
         return Permission::checkMember(
-            $memberID,
+            $member,
             ["ADMIN", "CATALOGUE_DELETE_CATEGORIES"]
         );
     }
